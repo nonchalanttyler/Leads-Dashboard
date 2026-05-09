@@ -463,6 +463,12 @@
         <h2 class="text-xl font-extrabold text-white">All Accounts</h2>
         <span class="text-[11px] text-dark-400 ml-1">· click any row to expand previous cycles</span>
       </div>
+
+      <!-- Live diagnostic banner — shows exactly what the sheet read is doing.
+           When everything's working it stays compact green. When it fails, it
+           shows the reason + a clickable test link so you don't need DevTools. -->
+      <div id="accounts-status-banner" class="mb-4 p-4 rounded-xl border text-sm hidden"></div>
+
       <div class="card p-0 overflow-hidden mb-8 fade-in">
         <div class="overflow-x-auto" style="max-height:80vh;">
           <table class="acct-table">
@@ -2258,11 +2264,17 @@ async function pullFromAccountsSheet() {
   const baseUrl   = `https://docs.google.com/spreadsheets/d/${ACCOUNTS_SHEET_ID}/gviz/tq?tqx=out:csv`;
   const byName    = `${baseUrl}&sheet=${encodeURIComponent(ACCOUNTS_TAB_NAME)}`;
   const byGid     = `${baseUrl}&gid=0`;
+  // 15-second timeout per fetch so a hung network can't leave us stuck forever
+  const fetchWithTimeout = (url, ms = 15000) => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(t));
+  };
   let csv = null, sourceUsed = '';
   try {
     // Attempt 1: by tab name
     try {
-      const r = await fetch(byName);
+      const r = await fetchWithTimeout(byName);
       if (r.ok) {
         const text = await r.text();
         if (!/<html/i.test(text.slice(0, 200))) { csv = text; sourceUsed = `?sheet=${ACCOUNTS_TAB_NAME}`; }
@@ -2270,14 +2282,14 @@ async function pullFromAccountsSheet() {
     } catch (_) {}
     // Attempt 2: by gid=0 (first tab)
     if (!csv) {
-      const r = await fetch(byGid);
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const r = await fetchWithTimeout(byGid);
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' from Google');
       const text = await r.text();
-      if (/<html/i.test(text.slice(0, 200))) throw new Error('sheet not public — share with "Anyone with the link"');
+      if (/<html/i.test(text.slice(0, 200))) throw new Error('sheet not public — needs Share → Anyone with the link');
       csv = text; sourceUsed = '?gid=0 (first tab)';
     }
     const rows = parseCSV(csv);
-    if (rows.length < 2) throw new Error('no rows');
+    if (rows.length < 2) throw new Error('sheet returned no rows');
 
     // Map column index → dashboard field via normalized header matching
     const headers = rows[0];
@@ -2417,6 +2429,7 @@ async function pullFromAccountsSheet() {
     console.log(`  Mapped columns: ${Object.keys(fieldToColLetter).join(', ')}`);
     if (unmappedHeaders.length) console.log(`  Unmapped headers (tell Claude to add aliases): ${unmappedHeaders.filter(Boolean).join(' | ')}`);
     lastAccountsSyncStatus = 'ok';
+    showAccountsBanner('ok', accounts.length, sourceUsed, unmappedHeaders);
   } catch (e) {
     console.warn('%c━━━ ACCOUNTS SHEET PULL FAILED ━━━', 'color:#ef4444;font-weight:bold');
     console.warn('  Reason:', e.message);
@@ -2424,7 +2437,58 @@ async function pullFromAccountsSheet() {
     console.warn('  Tab name:', ACCOUNTS_TAB_NAME);
     console.warn('  Most likely causes: (1) sheet not shared "Anyone with link" (2) tab name mismatch (3) network/CORS');
     lastAccountsSyncStatus = `failed: ${e.message}`;
+    showAccountsBanner('failed', 0, '', [], e.message);
   }
+}
+
+// Visible status banner above the All Accounts table — tells the user exactly
+// what the sheet read is doing, with actionable links/instructions when it fails.
+function showAccountsBanner(state, count, source, unmapped, errorMsg) {
+  const el = document.getElementById('accounts-status-banner');
+  if (!el) return;
+  const testUrl = `https://docs.google.com/spreadsheets/d/${ACCOUNTS_SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
+  const sheetUrl = `https://docs.google.com/spreadsheets/d/${ACCOUNTS_SHEET_ID}/edit`;
+
+  if (state === 'ok' && count > 0) {
+    el.className = 'mb-4 p-3 rounded-xl border text-xs';
+    el.style.cssText = 'background:rgba(34,197,94,0.06); border-color:rgba(34,197,94,0.25); color:#86efac;';
+    el.innerHTML = `<div class="flex items-center gap-2"><span class="text-green-400">✓</span><span class="font-semibold">Connected to spreadsheet</span><span class="text-dark-400">·</span><span>${count} account${count===1?'':'s'} loaded${source ? ' from ' + source : ''}</span>${unmapped && unmapped.length ? `<span class="text-yellow-400 ml-2">⚠ ${unmapped.length} unmapped column${unmapped.length===1?'':'s'}: ${unmapped.filter(Boolean).join(', ')}</span>` : ''}</div>`;
+    setTimeout(() => { el.classList.add('hidden'); }, 5000);
+    return;
+  }
+
+  if (state === 'ok' && count === 0) {
+    el.className = 'mb-4 p-4 rounded-xl border text-sm';
+    el.style.cssText = 'background:rgba(234,179,8,0.06); border-color:rgba(234,179,8,0.3); color:#fef3c7;';
+    el.innerHTML = `
+      <div class="font-semibold mb-1">⚠ Spreadsheet read but no accounts found</div>
+      <div class="text-xs text-dark-300 mb-2">The sheet was read successfully but no rows matched the expected structure (each row must have an account name + a "Cycle N" value).</div>
+      <div class="text-xs"><a href="${sheetUrl}" target="_blank" class="text-brand-400 hover:underline">Open spreadsheet</a> · check that rows have a Cycle column filled in.</div>
+    `;
+    return;
+  }
+
+  // failed
+  el.className = 'mb-4 p-4 rounded-xl border text-sm';
+  el.style.cssText = 'background:rgba(239,68,68,0.06); border-color:rgba(239,68,68,0.35); color:#fecaca;';
+  const isPermissionIssue = /not public|HTTP 4(0[13]|04)|permission|sign in|login/i.test(errorMsg || '');
+  const fixHint = isPermissionIssue
+    ? `<div class="text-xs leading-relaxed">
+         <strong>Most likely fix:</strong> the spreadsheet isn't shared publicly.<br>
+         <ol class="list-decimal ml-5 mt-1 space-y-0.5 text-dark-200">
+           <li><a href="${sheetUrl}" target="_blank" class="text-brand-400 hover:underline">Open the spreadsheet</a></li>
+           <li>Click <strong>Share</strong> (top right)</li>
+           <li>Under "General access", select <strong>"Anyone with the link"</strong></li>
+           <li>Set role to <strong>"Editor"</strong> (writes need this)</li>
+           <li>Click Done, then refresh this dashboard</li>
+         </ol>
+       </div>`
+    : `<div class="text-xs">Try opening the read endpoint directly: <a href="${testUrl}" target="_blank" class="text-brand-400 hover:underline break-all">${testUrl}</a></div>`;
+  el.innerHTML = `
+    <div class="font-semibold mb-2 text-red-300">✗ Could not read spreadsheet</div>
+    <div class="text-xs text-dark-200 mb-3"><strong>Error:</strong> ${errorMsg || 'unknown'}</div>
+    ${fixHint}
+  `;
 }
 
 // Push edits to the accounts sheet by account name + field (writes to current cycle row)
