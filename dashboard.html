@@ -2309,10 +2309,12 @@ async function pullFromLogbookSheet() {
     renderLogbook();
     setLbSyncPill(`Live · ${logbookLeads.length} rows`, 'up', 'bg-green-400');
     setLbSyncSubtitle(`Pulled ${logbookLeads.length} survey submits from the sheet · last sync just now · re-syncs on Refresh Data`);
+    lastLogbookSyncStatus = 'ok';
   } catch (e) {
     console.warn('Sheet pull failed, using demo data:', e.message);
     setLbSyncPill('Demo data · sheet not accessible', 'warn', 'bg-yellow-400');
     setLbSyncSubtitle('Could not read the sheet. Make sure it is shared "Anyone with the link can view" — or wire OAuth/Apps Script for private access.');
+    lastLogbookSyncStatus = `failed: ${e.message}`;
   }
 }
 
@@ -2538,8 +2540,14 @@ async function pullFromAccountsSheet() {
     console.log(`  Accounts found: ${accounts.map(a => `${a.name} (cycle ${a.cycle}, ${(newHistory[a.name]||[]).length+1} total cycles)`).join(' | ')}`);
     console.log(`  Mapped columns: ${Object.keys(fieldToColLetter).join(', ')}`);
     if (unmappedHeaders.length) console.log(`  Unmapped headers (tell Claude to add aliases): ${unmappedHeaders.filter(Boolean).join(' | ')}`);
+    lastAccountsSyncStatus = 'ok';
   } catch (e) {
-    console.warn('Accounts sheet pull failed, keeping demo data:', e.message);
+    console.warn('%c━━━ ACCOUNTS SHEET PULL FAILED ━━━', 'color:#ef4444;font-weight:bold');
+    console.warn('  Reason:', e.message);
+    console.warn('  Sheet ID:', ACCOUNTS_SHEET_ID);
+    console.warn('  Tab name:', ACCOUNTS_TAB_NAME);
+    console.warn('  Most likely causes: (1) sheet not shared "Anyone with link" (2) tab name mismatch (3) network/CORS');
+    lastAccountsSyncStatus = `failed: ${e.message}`;
   }
 }
 
@@ -2564,6 +2572,8 @@ async function pushAccountField(accountName, field, value) {
 
 let lastSyncAt = null;
 let autoRefreshTimer = null;
+let lastAccountsSyncStatus = null; // null | 'ok' | 'failed:<msg>'
+let lastLogbookSyncStatus  = null;
 
 async function refreshAllSheetData() {
   await Promise.all([
@@ -2577,12 +2587,31 @@ async function refreshAllSheetData() {
 function updateLiveSyncStamp() {
   const el = document.getElementById('live-sync-stamp');
   if (!el) return;
-  if (!lastSyncAt) { el.textContent = 'syncing…'; return; }
+  if (!lastSyncAt) { el.textContent = 'syncing…'; el.className = 'text-[11px] text-dark-500 mt-0.5'; return; }
+
   const secs = Math.floor((Date.now() - lastSyncAt) / 1000);
-  if (secs < 5)         el.textContent = 'just now';
-  else if (secs < 60)   el.textContent = `${secs}s ago`;
-  else if (secs < 3600) el.textContent = `${Math.floor(secs/60)}m ago`;
-  else                  el.textContent = `${Math.floor(secs/3600)}h ago`;
+  let timeStr;
+  if (secs < 5)         timeStr = 'just now';
+  else if (secs < 60)   timeStr = `${secs}s ago`;
+  else if (secs < 3600) timeStr = `${Math.floor(secs/60)}m ago`;
+  else                  timeStr = `${Math.floor(secs/3600)}h ago`;
+
+  const acctFailed = lastAccountsSyncStatus && String(lastAccountsSyncStatus).startsWith('failed');
+  const lbFailed   = lastLogbookSyncStatus  && String(lastLogbookSyncStatus).startsWith('failed');
+
+  if (acctFailed && lbFailed) {
+    el.textContent = `⚠ sync failed — check console (F12)`;
+    el.className   = 'text-[11px] text-red-400 mt-0.5 font-medium';
+  } else if (acctFailed) {
+    el.textContent = `⚠ accounts pull failed · ${timeStr}`;
+    el.className   = 'text-[11px] text-yellow-400 mt-0.5 font-medium';
+  } else if (lbFailed) {
+    el.textContent = `⚠ logbook pull failed · ${timeStr}`;
+    el.className   = 'text-[11px] text-yellow-400 mt-0.5 font-medium';
+  } else {
+    el.textContent = timeStr;
+    el.className   = 'text-[11px] text-dark-500 mt-0.5';
+  }
 }
 
 // Tick the relative-time display every 5 seconds so it stays fresh
