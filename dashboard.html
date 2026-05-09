@@ -1268,121 +1268,19 @@ const managers = [
 
 const pods = []; // pod overview removed — array kept empty so any stray refs no-op
 
-const accounts = [
-  { name:'Thompson Heating and Cooling', status:'Active', adAccountId:'920457183926483', cycle:3, cycleStart:'2026-04-30', cycleEnd:'2026-05-28',
-    hp:126, ftg:25, manager:'JELL', cyclePace:19, fiveDayPace:20, daysRemaining:19, aheadBy:1, onTrack:true,
-    gregGoal:16, bookedGoal:16, leads:17, osa:18, booked:6, estBooked:13, l2bRate:35.3,
-    cplGoal:218, cpl:67.02, cpqb:188.38, dailyBudget:125, monthlyBudget:3500, spent:1130, fiveDay:560,
-    ctr:0.79, cpc:3.47, cpm:25.29, frequency:1.84, survey:4.8 },
-  { name:'J.M.K. Contracting', status:'Active', adAccountId:'683300397978684', cycle:13, cycleStart:'2026-04-13', cycleEnd:'2026-05-11',
-    hp:142, ftg:33, manager:'Tyler', cyclePace:35, fiveDayPace:38, daysRemaining:2, aheadBy:21, onTrack:true,
-    gregGoal:15, bookedGoal:15, leads:72, osa:14, booked:36, estBooked:38, l2bRate:50,
-    cplGoal:233, cpl:90.97, cpqb:91, dailyBudget:125, monthlyBudget:3500, spent:3274.85, fiveDay:495.23,
-    ctr:0.86, cpc:2.71, cpm:21.27, frequency:2.23, survey:5.96 },
-  { name:'207 Roofers', status:'Active', adAccountId:'970016897559951', cycle:10, cycleStart:'2026-04-28', cycleEnd:'2026-05-26',
-    hp:108, ftg:20, manager:'Tyler', cyclePace:8, fiveDayPace:10, daysRemaining:17, aheadBy:-3, onTrack:false,
-    gregGoal:15, bookedGoal:15, leads:18, osa:0, booked:8, estBooked:20, l2bRate:44.4,
-    cplGoal:187, cpl:139.15, cpqb:139, dailyBudget:100, monthlyBudget:2800, spent:1113.21, fiveDay:324.52,
-    ctr:0.75, cpc:3.15, cpm:23.06, frequency:1.61, survey:5.10 },
-  { name:'Denver Roof Pros', status:'Active', adAccountId:'1238231271543451', cycle:3, cycleStart:'2026-04-21', cycleEnd:'2026-05-19',
-    hp:78, ftg:14, manager:'Gregory', cyclePace:8, fiveDayPace:6, daysRemaining:10, aheadBy:-12, onTrack:false,
-    gregGoal:30, bookedGoal:20, leads:13, osa:0, booked:7, estBooked:11, l2bRate:53.8,
-    cplGoal:263, cpl:399.62, cpqb:400, dailyBudget:150, monthlyBudget:4200, spent:2797.35, fiveDay:1238.67,
-    ctr:0.52, cpc:6.08, cpm:29.79, frequency:1.65, survey:2.83 },
-  { name:'Hi-5 Roofing', status:'Active', adAccountId:'3470254139789185', cycle:1, cycleStart:'2026-03-16', cycleEnd:'2026-05-03',
-    hp:65, ftg:11, manager:'Sam', cyclePace:9, fiveDayPace:7, daysRemaining:0, aheadBy:-6, onTrack:false,
-    gregGoal:15, bookedGoal:15, leads:39, osa:28, booked:9, estBooked:5, l2bRate:23.1,
-    cplGoal:187, cpl:531.96, cpqb:532, dailyBudget:100, monthlyBudget:2800, spent:4787.67, fiveDay:460.86,
-    ctr:0.72, cpc:5.08, cpm:30.25, frequency:2.75, survey:4.03 },
-  { name:'Combat Roofing', status:'Q1 Onboarded', adAccountId:'1237211741694226', cycle:4, cycleStart:'2026-05-08', cycleEnd:'2026-06-05',
-    hp:95, ftg:18, manager:'Cole', cyclePace:0, fiveDayPace:0, daysRemaining:27, aheadBy:0, onTrack:true,
-    gregGoal:15, bookedGoal:25, leads:0, osa:0, booked:0, estBooked:0, l2bRate:0,
-    cplGoal:224, cpl:0, cpqb:0, dailyBudget:200, monthlyBudget:5600, spent:187.50, fiveDay:187.50,
-    ctr:0.80, cpc:3.91, cpm:30.57, frequency:1.38, survey:0.00 },
-  { name:'Roof It All', status:'Q1 Onboarded', adAccountId:'476261684788171', cycle:4, cycleStart:'2026-05-08', cycleEnd:'2026-06-05',
-    hp:88, ftg:17, manager:'Cole', cyclePace:0, fiveDayPace:0, daysRemaining:27, aheadBy:0, onTrack:true,
-    gregGoal:18, bookedGoal:18, leads:0, osa:0, booked:0, estBooked:0, l2bRate:0,
-    cplGoal:233, cpl:0, cpqb:0, dailyBudget:150, monthlyBudget:4200, spent:123.43, fiveDay:123.43,
-    ctr:0.53, cpc:4.57, cpm:24.21, frequency:1.10, survey:0.00 },
-  { name:'Ron Bell Roofing', status:'Q1 Onboarded', adAccountId:'730609608741332', cycle:1, cycleStart:'2026-04-30', cycleEnd:'2026-05-28',
-    hp:62, ftg:8, manager:'Kyle', cyclePace:0, fiveDayPace:0, daysRemaining:19, aheadBy:-15, onTrack:false,
-    gregGoal:15, bookedGoal:15, leads:0, osa:0, booked:0, estBooked:0, l2bRate:0,
-    cplGoal:187, cpl:0, cpqb:0, dailyBudget:100, monthlyBudget:2800, spent:190.23, fiveDay:0,
-    ctr:0.41, cpc:31.71, cpm:98.41, frequency:1.49, survey:0.00 },
-  { name:'WaynCo Roofing', status:'Q1 Onboarded', adAccountId:'803220808695272', cycle:2, cycleStart:'2026-04-20', cycleEnd:'2026-05-18',
-    hp:71, ftg:13, manager:'Kyle', cyclePace:6, fiveDayPace:4, daysRemaining:9, aheadBy:-8, onTrack:false,
-    gregGoal:14, bookedGoal:14, leads:28, osa:14, booked:6, estBooked:7, l2bRate:21.4,
-    cplGoal:200, cpl:380.74, cpqb:381, dailyBudget:100, monthlyBudget:2800, spent:2284.44, fiveDay:326.10,
-    ctr:0.34, cpc:15.75, cpm:50.72, frequency:1.93, survey:19.31 },
-  { name:'Roof4Roof', status:'Q1 Onboarded', adAccountId:'598217807683912', cycle:1, cycleStart:'2026-03-17', cycleEnd:'2026-05-06',
-    hp:85, ftg:16, manager:'Gianmarco', cyclePace:12, fiveDayPace:11, daysRemaining:0, aheadBy:-8, onTrack:false,
-    gregGoal:20, bookedGoal:20, leads:48, osa:23, booked:12, estBooked:6, l2bRate:25,
-    cplGoal:210, cpl:714.01, cpqb:714, dailyBudget:150, monthlyBudget:4200, spent:8568.11, fiveDay:852.21,
-    ctr:1.33, cpc:4.49, cpm:47.51, frequency:2.48, survey:2.51 },
-  { name:'Conejo Valley Roofing', status:'Q1 Onboarded', adAccountId:'777122155466648', cycle:2, cycleStart:'2026-04-28', cycleEnd:'2026-05-26',
-    hp:118, ftg:22, manager:'Gianmarco', cyclePace:9, fiveDayPace:11, daysRemaining:17, aheadBy:2, onTrack:true,
-    gregGoal:19, bookedGoal:19, leads:16, osa:6, booked:9, estBooked:23, l2bRate:56.3,
-    cplGoal:221, cpl:183.38, cpqb:183, dailyBudget:150, monthlyBudget:4200, spent:1650.42, fiveDay:581.36,
-    ctr:0.56, cpc:5.03, cpm:27.17, frequency:1.59, survey:4.88 },
-  { name:'A.G. Exterior Solutions', status:'Q1 Onboarded', adAccountId:'860570763698229', cycle:1, cycleStart:'2026-05-01', cycleEnd:'2026-05-29',
-    hp:74, ftg:15, manager:'Gregory', cyclePace:2, fiveDayPace:3, daysRemaining:20, aheadBy:-10, onTrack:false,
-    gregGoal:16, bookedGoal:16, leads:7, osa:14, booked:2, estBooked:5, l2bRate:28.6,
-    cplGoal:200, cpl:215.40, cpqb:215, dailyBudget:100, monthlyBudget:2800, spent:1078.30, fiveDay:312.10,
-    ctr:0.81, cpc:3.62, cpm:25.40, frequency:1.78, survey:3.10 },
-];
+// Accounts get populated entirely from the All Accounts spreadsheet.
+// Empty by default — if the sheet pull fails, the table shows empty
+// rather than misleading demo data, so it's obvious something needs fixing.
+const accounts = [];
 
-// Lead breakdown for the active cycle of Thompson Heating
-const thompsonLeads = [
-  { date:'May 7, 2026', dayCount:1, name:'Erick Rada',         address:'2903 Butler ct , 40218 40218',                        distance:'5 min (1.7 miles) / Jefferson',  status:'Manual Booked',     va:'Jell', speed:'—', note:'Qualified - Appt confirmed' },
-  { date:'May 6, 2026', dayCount:2, name:'Bill Ware',          address:'3800 East Kinderhook Underwood IN, 47…',              distance:'45 min (35.4 miles)',             status:'Cancelled/Invalid', va:'Jell', speed:'—', note:'OSA - client confirmed' },
-  { date:null,                       name:'Todd Neeld',         address:'4222 sunrise dr., 47172 47172',                       distance:'29 min (23.6 miles) / Oldham',   status:'Cancelled/Invalid', va:'Jell', speed:'—', note:'will hold off request for now - already spoke with another c…' },
-  { date:'May 5, 2026', dayCount:4, name:'Meredith Sommer',    address:'1105 Juniper Springs Dr, 40242 40242',                distance:'18 min (7.5 miles)',              status:'Unconfirmed',       va:'Jell', speed:'—', note:'05/08 No Answer - Left VM - Sent SMS' },
-  { date:null,                       name:'Philip Garcia',      address:'7052 wildwood circle, 40291 40291',                  distance:'6 min (2.1 miles)',               status:'Not booked',        va:'Jell', speed:'—', note:'05/08 No Answer - Left VM - Sent SMS' },
-  { date:null,                       name:'David Wagner',       address:'8552 Main Street CAMPBELLSBURG KY 5…',               distance:'21 min (20.5 miles) / Oldham',   status:'Manual Booked',     va:'Jell', speed:'—', note:'Qualified - Appt confirmed' },
-  { date:null,                       name:'Sherry Parrish',     address:'911 5th st, 41008 41008',                            distance:'39 min (35.2 miles) / Oldham',   status:'Confirmed',         va:'Jell', speed:'—', note:'Qualified - Appt confirmed' },
-  { date:'May 4, 2026', dayCount:1, name:'Gretchen Carolan',   address:'8517 Brookside Drive East, Pewee Valley, …',          distance:'14 min (6.0 miles) / Oldham',    status:'not responding',    va:'Jell', speed:'—', note:'05/07 No Answer - Left VM - Sent SMS' },
-  { date:'May 3, 2026', dayCount:3, name:'Saundra M',          address:'7249 Briscoe Vista Way , 40228 40228',                distance:'Yes - Jefferson County',          status:'not responding',    va:'Ann',  speed:'—', note:'05/07 No Answer - Left VM - Sent SMS' },
-  { date:null,                       name:'Lonnie McLaughlin',  address:'11622 Victoria Falls Lane Prospect, Ky 40…',          distance:'Jefferson County',                 status:'Manual Booked',     va:'Ann',  speed:'—', note:'05/07 prequal - waiting for schedule' },
-  { date:null,                       name:'Dale Padgett',       address:'12805 Woodside Drive , 40059 40059',                  distance:'Yes - Oldham County',              status:'Manual Booked',     va:'Ann',  speed:'—', note:'Lead Qualified - Appt Confirmed' },
-  { date:'May 1, 2026', dayCount:2, name:'Pamela MacLaine',    address:'1050 Hwy 44 W Lot 105, 40165 40165',                  distance:'29 min (22.5 miles) / Jefferson',status:'Manual Booked',     va:'Jell', speed:'—', note:'Qualified - Appt confirmed' },
-  { date:null,                       name:'Ron Severns',        address:'620 South Main Street, 47118 47118',                  distance:'1 hr 4 min (67.9 miles)',          status:'Cancelled/Invalid', va:'Jell', speed:'—', note:'confirmed by client' },
-  { date:'Apr 30, 2026',dayCount:1, name:'Chris Smallwood',    address:'4626 cane run road Louisville ky, 40216 4…',          distance:'21 min (14.5 miles)',              status:'Cancelled/Invalid', va:'Jell', speed:'—', note:'05/05 lead said he had it fixed' },
-];
+// Lead breakdown — empty until lead-sheet wiring is in place
+const thompsonLeads = [];
 
-const thompsonDaily = [
-  { date:'5/9',  spend:10.42,  ctr:0.93, cpc:3.47, survey:0.0,  cpm:32.26, freq:1.19, cpl:null,    cpr:null,    cpqb:null,  leads:0, booked:0 },
-  { date:'5/8',  spend:113.29, ctr:0.76, cpc:3.33, survey:8.8,  cpm:25.36, freq:1.23, cpl:37.76,   cpr:113.29,  cpqb:null,  leads:3, booked:0 },
-  { date:'5/7',  spend:118.05, ctr:0.57, cpc:4.54, survey:3.8,  cpm:25.76, freq:1.30, cpl:118.05,  cpr:null,    cpqb:118,   leads:1, booked:1 },
-  { date:'5/6',  spend:136.60, ctr:0.98, cpc:2.63, survey:3.8,  cpm:25.80, freq:1.31, cpl:68.30,   cpr:null,    cpqb:null,  leads:2, booked:0 },
-  { date:'5/5',  spend:121.58, ctr:0.86, cpc:2.89, survey:9.5,  cpm:24.82, freq:1.29, cpl:30.40,   cpr:60.79,   cpqb:61,    leads:4, booked:2 },
-  { date:'5/4',  spend:146.51, ctr:0.82, cpc:3.05, survey:2.1,  cpm:25.01, freq:1.25, cpl:146.51,  cpr:null,    cpqb:null,  leads:1, booked:0 },
-  { date:'5/3',  spend:133.12, ctr:0.70, cpc:3.10, survey:7.0,  cpm:21.68, freq:1.23, cpl:44.37,   cpr:null,    cpqb:67,    leads:3, booked:2 },
-  { date:'5/2',  spend:110.78, ctr:0.74, cpc:3.26, survey:0.0,  cpm:24.15, freq:1.23, cpl:null,    cpr:null,    cpqb:null,  leads:0, booked:0 },
-  { date:'5/1',  spend:114.92, ctr:0.69, cpc:3.96, survey:6.9,  cpm:27.54, freq:1.24, cpl:57.46,   cpr:114.92,  cpqb:115,   leads:2, booked:1 },
-  { date:'4/30', spend:134.04, ctr:0.95, cpc:3.05, survey:2.3,  cpm:29.04, freq:1.29, cpl:134.04,  cpr:134.04,  cpqb:null,  leads:1, booked:0 },
-];
+// Daily campaign performance — empty until Meta Sync runs (look for a.metaDaily)
+const thompsonDaily = [];
 
-// Ads Management hierarchy for Thompson
-const thompsonAds = {
-  campaigns: [{
-    name:'Thompson Heating & Cooling B2C Leads 20260227',
-    status:'ACTIVE', activeAds:'38/47', spend:1139, leads:16, schedules:5,
-    adsets: [{
-      name:'KY and IN cities MF30-65+', activeAds:'38/47', spend:1139, leads:16, schedules:5,
-      ads: [
-        { name:'10SERVICECALL', active:true,
-          layer1:{ booked:'—', cpqb:'—', scheduled:2, cpr:188.84, leads:7, cpl:53.96, spend:378 },
-          layer2:{ cpc:2.80, ctr:0.96, freq:1.26, cpm:26.99, clicks:135, survey:5.19, medS2L:'—' } },
-        { name:'13SERVICECALL', active:true,
-          layer1:{ booked:'—', cpqb:'—', scheduled:2, cpr:155.72, leads:4, cpl:77.86, spend:311 },
-          layer2:{ cpc:4.87, ctr:0.48, freq:1.27, cpm:23.47, clicks:64,  survey:6.25, medS2L:'—' } },
-        { name:'1ASMR', active:true,
-          layer1:{ booked:'—', cpqb:'—', scheduled:1, cpr:225.16, leads:5, cpl:90.04, spend:450 },
-          layer2:{ cpc:3.21, ctr:0.71, freq:1.31, cpm:22.81, clicks:140, survey:4.40, medS2L:'—' } },
-      ]
-    }]
-  }]
-};
+// Ads management — empty until Meta Sync runs (look for a.metaAds)
+const thompsonAds = { campaigns: [] };
 
 // Logbook + VAs (carried from prior view)
 const vas = [
@@ -1566,40 +1464,8 @@ renderCommandCenter();
 
 // Previous-cycle history per account (keyed by account name)
 // Empty array means cycle 1 (no priors yet).
-const accountHistory = {
-  'Combat Roofing': [
-    { cycle:3, healthBadge:92,  cycleStart:'2026-04-09', cycleEnd:'2026-05-07', ftg:10, leads:70, booked:23, bookedGoal:25, projected:21, cpaGoal:224, cpa:261.65, spent:6018, monthlyBudget:5600, ctr:0.78, cpc:3.87, cpm:26.32, frequency:2.85, osa:14, survey:4.50 },
-    { cycle:2, healthBadge:260, cycleStart:'2026-03-12', cycleEnd:'2026-04-09', ftg:10, leads:87, booked:39, bookedGoal:15, projected:44, cpaGoal:373.33, cpa:126.13, spent:4919, monthlyBudget:5600, ctr:0.78, cpc:4.64, cpm:30.73, frequency:2.60, osa:33, survey:8.20 },
-    { cycle:1, healthBadge:127, cycleStart:'2026-02-12', cycleEnd:'2026-03-12', ftg:null, leads:51, booked:19, bookedGoal:15, projected:20, cpaGoal:280, cpa:209.99, spent:3990, monthlyBudget:4200, ctr:0.85, cpc:4.64, cpm:33.20, frequency:2.58, osa:41, survey:5.93 },
-  ],
-  'Roof It All': [
-    { cycle:3, healthBadge:81, cycleStart:'2026-04-10', cycleEnd:'2026-05-08', ftg:67, leads:48, booked:14, bookedGoal:18, projected:16, cpaGoal:233.33, cpa:241.50, spent:3381, monthlyBudget:4200, ctr:0.61, cpc:4.42, cpm:24.85, frequency:1.45, osa:9, survey:3.10 },
-    { cycle:2, healthBadge:74, cycleStart:'2026-03-13', cycleEnd:'2026-04-10', ftg:62, leads:53, booked:12, bookedGoal:18, projected:14, cpaGoal:233.33, cpa:285.00, spent:3420, monthlyBudget:4200, ctr:0.55, cpc:4.55, cpm:25.10, frequency:1.32, osa:6, survey:2.85 },
-    { cycle:1, healthBadge:70, cycleStart:'2026-02-13', cycleEnd:'2026-03-13', ftg:null, leads:39, booked:9, bookedGoal:18, projected:11, cpaGoal:233.33, cpa:368.00, spent:3312, monthlyBudget:4200, ctr:0.49, cpc:4.71, cpm:23.95, frequency:1.18, osa:5, survey:2.40 },
-  ],
-  'Denver Roof Pros': [
-    { cycle:2, healthBadge:55, cycleStart:'2026-03-24', cycleEnd:'2026-04-21', ftg:13, leads:18, booked:8, bookedGoal:20, projected:9, cpaGoal:262.50, cpa:340.00, spent:2720, monthlyBudget:4200, ctr:0.58, cpc:5.92, cpm:30.21, frequency:1.62, osa:4, survey:2.90 },
-    { cycle:1, healthBadge:48, cycleStart:'2026-02-24', cycleEnd:'2026-03-24', ftg:null, leads:14, booked:5, bookedGoal:20, projected:7, cpaGoal:262.50, cpa:412.00, spent:2060, monthlyBudget:4200, ctr:0.55, cpc:6.20, cpm:31.10, frequency:1.45, osa:3, survey:2.65 },
-  ],
-  'WaynCo Roofing': [
-    { cycle:1, healthBadge:62, cycleStart:'2026-03-23', cycleEnd:'2026-04-20', ftg:null, leads:21, booked:5, bookedGoal:14, projected:6, cpaGoal:200.00, cpa:432.00, spent:2160, monthlyBudget:2800, ctr:0.31, cpc:14.85, cpm:48.32, frequency:1.85, osa:11, survey:18.40 },
-  ],
-  'Conejo Valley Roofing': [
-    { cycle:1, healthBadge:71, cycleStart:'2026-03-15', cycleEnd:'2026-04-12', ftg:null, leads:28, booked:9, bookedGoal:18, projected:11, cpaGoal:155.55, cpa:182.00, spent:1638, monthlyBudget:2800, ctr:0.78, cpc:3.40, cpm:28.10, frequency:1.65, osa:14, survey:7.20 },
-  ],
-  'J.M.K. Contracting': [
-    { cycle:12, healthBadge:88, cycleStart:'2026-03-16', cycleEnd:'2026-04-13', ftg:32, leads:69, booked:34, bookedGoal:15, projected:36, cpaGoal:233, cpa:96.00, spent:3264, monthlyBudget:3500, ctr:0.84, cpc:2.65, cpm:21.10, frequency:2.18, osa:16, survey:5.85 },
-    { cycle:11, healthBadge:85, cycleStart:'2026-02-16', cycleEnd:'2026-03-16', ftg:30, leads:64, booked:31, bookedGoal:15, projected:33, cpaGoal:233, cpa:103.00, spent:3193, monthlyBudget:3500, ctr:0.81, cpc:2.71, cpm:21.85, frequency:2.10, osa:15, survey:5.60 },
-  ],
-  '207 Roofers': [
-    { cycle:9, healthBadge:58, cycleStart:'2026-03-31', cycleEnd:'2026-04-28', ftg:18, leads:16, booked:6, bookedGoal:15, projected:8, cpaGoal:187, cpa:182.00, spent:1092, monthlyBudget:2800, ctr:0.71, cpc:3.20, cpm:23.40, frequency:1.55, osa:0, survey:4.85 },
-    { cycle:8, healthBadge:54, cycleStart:'2026-03-03', cycleEnd:'2026-03-31', ftg:16, leads:15, booked:5, bookedGoal:15, projected:7, cpaGoal:187, cpa:215.00, spent:1075, monthlyBudget:2800, ctr:0.68, cpc:3.28, cpm:23.85, frequency:1.48, osa:0, survey:4.50 },
-  ],
-  'Thompson Heating and Cooling': [
-    { cycle:2, healthBadge:78, cycleStart:'2026-04-02', cycleEnd:'2026-04-30', ftg:23, leads:22, booked:9, bookedGoal:16, projected:11, cpaGoal:218.75, cpa:215.00, spent:1935, monthlyBudget:3500, ctr:0.82, cpc:3.10, cpm:24.85, frequency:1.71, osa:16, survey:5.10 },
-    { cycle:1, healthBadge:71, cycleStart:'2026-03-05', cycleEnd:'2026-04-02', ftg:null, leads:18, booked:6, bookedGoal:16, projected:8, cpaGoal:218.75, cpa:285.00, spent:1710, monthlyBudget:3500, ctr:0.76, cpc:3.25, cpm:25.10, frequency:1.62, osa:12, survey:4.75 },
-  ],
-};
+// Per-account previous cycles — populated from the sheet pull, keyed by account name
+const accountHistory = {};
 
 // Threshold-based color class for a metric cell
 function thresholdClass(metric, value) {
@@ -2770,9 +2636,9 @@ function renderClient(a) {
     ${kpiCard('SURVEY', a.survey.toFixed(1)+'%', 'target ≥2.00%', colorFor(surveyTone))}
   `;
 
-  // Lead Breakdown — using Thompson data when on that account, otherwise generated
-  const isThompson = a.name === 'Thompson Heating and Cooling';
-  const leads = isThompson ? thompsonLeads : generateLeadsFor(a);
+  // Lead Breakdown — uses real per-client lead data when present, otherwise empty
+  // (a.leadsList will be populated when the lead sheet integration is wired)
+  const leads = Array.isArray(a.leadsList) ? a.leadsList : [];
   const totalBkd = leads.filter(l => l.status === 'Manual Booked' || l.status === 'Confirmed' || l.status === 'Booked').length;
   const totalLost = leads.filter(l => l.status === 'Cancelled/Invalid' || l.status === 'not responding').length;
   const totalOpen = leads.filter(l => l.status === 'Unconfirmed' || l.status === 'Not booked' || l.status === 'Call back').length;
@@ -2786,28 +2652,8 @@ function renderClient(a) {
     <span class="px-3 py-1.5 rounded-lg bg-transparent text-white text-xs font-semibold border border-white/40">${leads.length} total</span>
   `;
 
-  // Weekly buckets — show 4 weeks
-  const weeks = [
-    { label:'Week 1', total:13, bkd:5, oth:0, lost:6, open:2 },
-    { label:'Week 2', total:4,  bkd:1, oth:0, lost:1, open:2 },
-    { label:'Week 3', total:0,  bkd:0, oth:0, lost:0, open:0 },
-    { label:'Week 4', total:0,  bkd:0, oth:0, lost:0, open:0 },
-  ];
-  document.getElementById('lead-weeks').innerHTML = weeks.map(w => `
-    <div class="week-card">
-      <div class="text-[10px] uppercase tracking-[0.18em] text-dark-500 font-semibold">${w.label}</div>
-      <div class="text-3xl font-extrabold text-white mt-1">${w.total}</div>
-      <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-2 text-[11px]">
-        <span class="text-green-400 font-semibold">${w.bkd} bkd</span>
-        <span class="text-yellow-400">·</span>
-        <span class="text-yellow-400">${w.oth} oth</span>
-        <span class="text-red-400">·</span>
-        <span class="text-red-400">${w.lost} lost</span>
-        <span class="text-dark-400">·</span>
-        <span class="text-dark-300">${w.open} open</span>
-      </div>
-    </div>
-  `).join('');
+  // Weekly buckets — empty until lead-sheet wiring is in place
+  document.getElementById('lead-weeks').innerHTML = `<div class="col-span-full p-6 rounded-xl border border-dashed border-dark-600/40 text-center text-dark-500 text-sm">Weekly bucket data appears here once leads are flowing from a connected lead sheet.</div>`;
 
   // Lead table
   const statusColor = s => {
@@ -2817,106 +2663,117 @@ function renderClient(a) {
     if (s === 'Not booked' || s === 'Call back') return 'text-yellow-400';
     return 'text-dark-300';
   };
-  document.getElementById('lead-table').innerHTML = leads.map(l => `
-    <tr class="heat-row">
-      <td class="py-2 pr-3 align-top text-dark-300 whitespace-nowrap">${l.date ? `${l.date} <span class="text-dark-500">(${l.dayCount})</span>` : ''}</td>
-      <td class="py-2 pr-3 align-top ${statusColor(l.status)}">${l.name}</td>
-      <td class="py-2 pr-3 align-top text-dark-300 truncate max-w-[200px]">${l.address}</td>
-      <td class="py-2 pr-3 align-top text-dark-300 truncate max-w-[200px]">${l.distance}</td>
-      <td class="py-2 pr-3 align-top ${statusColor(l.status)} font-semibold">${l.status}</td>
-      <td class="py-2 pr-3 align-top text-dark-200">${l.va}</td>
-      <td class="py-2 pr-3 align-top text-dark-500">${l.speed}</td>
-      <td class="py-2 pr-3 align-top text-dark-300 truncate max-w-[280px]">${l.note}</td>
-    </tr>
-  `).join('');
+  const leadTbl = document.getElementById('lead-table');
+  if (leads.length === 0) {
+    leadTbl.innerHTML = `<tr><td colspan="8" class="py-12 text-center text-dark-500 text-sm"><div class="mb-2">No lead data yet</div><div class="text-xs">Connect a <span class="text-blue-400 font-semibold">Lead Sheet</span> in the Integrations modal to populate this table</div></td></tr>`;
+  } else {
+    leadTbl.innerHTML = leads.map(l => `
+      <tr class="heat-row">
+        <td class="py-2 pr-3 align-top text-dark-300 whitespace-nowrap">${l.date ? `${l.date} <span class="text-dark-500">(${l.dayCount})</span>` : ''}</td>
+        <td class="py-2 pr-3 align-top ${statusColor(l.status)}">${l.name || ''}</td>
+        <td class="py-2 pr-3 align-top text-dark-300 truncate max-w-[200px]">${l.address || ''}</td>
+        <td class="py-2 pr-3 align-top text-dark-300 truncate max-w-[200px]">${l.distance || ''}</td>
+        <td class="py-2 pr-3 align-top ${statusColor(l.status)} font-semibold">${l.status || ''}</td>
+        <td class="py-2 pr-3 align-top text-dark-200">${l.va || ''}</td>
+        <td class="py-2 pr-3 align-top text-dark-500">${l.speed || '—'}</td>
+        <td class="py-2 pr-3 align-top text-dark-300 truncate max-w-[280px]">${l.note || ''}</td>
+      </tr>
+    `).join('');
+  }
 
-  // Cycle Comparison
-  const comp = isThompson ? [
-    { label:'LEADS',    cur:17,        prev:25,        unit:'',  delta:-32.0 },
-    { label:'BOOKINGS', cur:6,         prev:13,        unit:'',  delta:-53.8 },
-    { label:'SPEND',    cur:1139.31,   prev:1196.52,   unit:'$', delta:-4.8  },
-    { label:'CPL',      cur:67.02,     prev:47.86,     unit:'$', delta:40.0  },
-    { label:'CPA',      cur:189.89,    prev:92.04,     unit:'$', delta:106.3 },
-  ] : [
-    { label:'LEADS',    cur:a.leads,           prev:Math.round(a.leads*1.2),   unit:'',  delta:-16 },
-    { label:'BOOKINGS', cur:a.booked,          prev:Math.round(a.booked*1.4),  unit:'',  delta:-28 },
-    { label:'SPEND',    cur:a.spent,           prev:a.spent*1.05,              unit:'$', delta:-5  },
-    { label:'CPL',      cur:a.cpl,             prev:a.cpl*0.85,                unit:'$', delta:18  },
-    { label:'CPA',      cur:a.cpqb,            prev:a.cpqb*0.6,                unit:'$', delta:67  },
-  ];
+  // Cycle Comparison — uses the real previous cycle from accountHistory if present
+  const priorCycles = accountHistory[a.name] || [];
+  const prev = priorCycles[0]; // most recent prior cycle
+  const safeNum = (x) => (typeof x === 'number' && !isNaN(x)) ? x : null;
+  const pctDelta = (cur, prev) => (prev && prev !== 0) ? ((cur - prev) / prev) * 100 : null;
+  const comp = prev ? [
+    { label:'LEADS',    cur:safeNum(a.leads),  prev:safeNum(prev.leads),  unit:''  },
+    { label:'BOOKINGS', cur:safeNum(a.booked), prev:safeNum(prev.booked), unit:''  },
+    { label:'SPEND',    cur:safeNum(a.spent),  prev:safeNum(prev.spent),  unit:'$' },
+    { label:'CPL',      cur:safeNum(a.cpl),    prev:safeNum(prev.cpl),    unit:'$' },
+    { label:'CTR',      cur:safeNum(a.ctr),    prev:safeNum(prev.ctr),    unit:'%' },
+  ].map(c => ({ ...c, delta: c.cur != null && c.prev != null ? pctDelta(c.cur, c.prev) : null })) : [];
   const isPositive = (label, delta) => {
-    // For cost metrics (SPEND, CPL, CPA), going down is positive
+    if (delta == null) return null;
     if (['SPEND','CPL','CPA'].includes(label)) return delta < 0;
-    // For volume metrics (LEADS, BOOKINGS), going up is positive
     return delta > 0;
   };
-  document.getElementById('cycle-comparison').innerHTML = comp.map(c => {
-    const pos = isPositive(c.label, c.delta);
-    const arrow = c.delta > 0 ? '▲' : c.delta < 0 ? '▼' : '●';
-    const arrowColor = pos ? 'text-green-400' : 'text-red-400';
-    const valueDisplay = c.unit + c.cur.toLocaleString(undefined,{maximumFractionDigits:c.unit?2:0});
-    const prevDisplay = c.unit + c.prev.toLocaleString(undefined,{maximumFractionDigits:c.unit?2:0});
-    return `
-      <div class="kpi-card p-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-[10px] uppercase tracking-wider text-dark-400 font-semibold">${c.label}</span>
-          <span class="${arrowColor} text-xs font-bold">${arrow} ${Math.abs(c.delta).toFixed(1)}%</span>
+  const cycleCompEl = document.getElementById('cycle-comparison');
+  if (comp.length === 0) {
+    cycleCompEl.innerHTML = `<div class="col-span-full p-6 rounded-xl border border-dashed border-dark-600/40 text-center text-dark-500 text-sm">No prior cycle data yet — comparison will appear once this client has a previous cycle in the spreadsheet.</div>`;
+  } else {
+    cycleCompEl.innerHTML = comp.map(c => {
+      if (c.cur == null || c.prev == null) {
+        return `<div class="kpi-card p-4"><div class="text-[10px] uppercase tracking-wider text-dark-400 font-semibold mb-2">${c.label}</div><div class="text-2xl font-extrabold text-dark-500">—</div><div class="text-[11px] text-dark-500 mt-1">no data</div></div>`;
+      }
+      const pos = isPositive(c.label, c.delta);
+      const arrow = c.delta > 0 ? '▲' : c.delta < 0 ? '▼' : '●';
+      const arrowColor = pos === null ? 'text-dark-500' : pos ? 'text-green-400' : 'text-red-400';
+      const fmt = (v) => c.unit === '$' ? '$'+v.toLocaleString(undefined,{maximumFractionDigits:0}) : c.unit === '%' ? v.toFixed(2)+'%' : v.toLocaleString();
+      return `
+        <div class="kpi-card p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] uppercase tracking-wider text-dark-400 font-semibold">${c.label}</span>
+            <span class="${arrowColor} text-xs font-bold">${arrow} ${Math.abs(c.delta).toFixed(1)}%</span>
+          </div>
+          <div class="text-2xl font-extrabold text-white">${fmt(c.cur)}</div>
+          <div class="text-[11px] text-dark-500 mt-1">was ${fmt(c.prev)}</div>
         </div>
-        <div class="text-2xl font-extrabold text-white">${valueDisplay}</div>
-        <div class="text-[11px] text-dark-500 mt-1">was ${prevDisplay}</div>
-      </div>
-    `;
-  }).join('');
+      `;
+    }).join('');
+  }
 
-  // 5D Trend strip
+  // 5D Trend strip — placeholder until Meta daily sync is run
   document.getElementById('trend-5d').innerHTML = `
     <span class="text-dark-500 flex items-center gap-1">📈 5D TREND</span>
-    <span class="text-dark-400">CPL <span class="text-white font-semibold">$49.99</span> <span class="text-green-400">▼−45%</span></span>
-    <span class="text-dark-400">CPB <span class="text-white font-semibold">$167</span> <span class="text-green-400">▼−20%</span></span>
-    <span class="text-dark-400">CTR <span class="text-white font-semibold">0.80%</span> <span class="text-dark-500">●Flat</span></span>
-    <span class="text-dark-400">CPM <span class="text-white font-semibold">$26</span> <span class="text-dark-500">●Flat</span></span>
-    <span class="text-dark-400">FREQ <span class="text-white font-semibold">1.28</span> <span class="text-dark-500">●Flat</span></span>
-    <span class="text-dark-400">BOOKINGS/DAY <span class="text-white font-semibold">0.6</span> <span class="text-dark-500">●Flat</span></span>
+    <span class="text-dark-500 text-xs italic">Click <span class="text-blue-400">Sync Meta</span> to populate trend</span>
   `;
 
-  // Daily heatmap table
-  const daily = isThompson ? thompsonDaily : generateDailyFor(a);
-  const heatClass = (k, v) => {
-    if (v == null) return 'heat-na';
-    return checkThreshold(k, v) === 'good' ? 'heat-good' : 'heat-bad';
-  };
-  document.getElementById('daily-table').innerHTML = daily.map(d => `
-    <tr class="heat-row">
-      <td class="py-2 px-2 text-dark-300">${d.date}</td>
-      <td class="py-2 px-2 text-right text-white font-medium">$${d.spend.toFixed(2)}</td>
-      <td class="py-2 px-2 text-right ${heatClass('ctr', d.ctr)}"><span class="px-2 py-1 rounded">${d.ctr.toFixed(2)}%</span></td>
-      <td class="py-2 px-2 text-right ${heatClass('cpc', d.cpc)}"><span class="px-2 py-1 rounded">$${d.cpc.toFixed(2)}</span></td>
-      <td class="py-2 px-2 text-right ${d.survey >= 2 ? 'heat-good' : 'heat-bad'}"><span class="px-2 py-1 rounded">${d.survey.toFixed(1)}%</span></td>
-      <td class="py-2 px-2 text-right ${heatClass('cpm', d.cpm)}"><span class="px-2 py-1 rounded">$${d.cpm.toFixed(2)}</span></td>
-      <td class="py-2 px-2 text-right ${heatClass('frequency', d.freq)}"><span class="px-2 py-1 rounded">${d.freq.toFixed(2)}</span></td>
-      <td class="py-2 px-2 text-right ${d.cpl == null ? 'heat-na' : d.cpl <= a.cplGoal ? 'heat-good' : 'heat-bad'}"><span class="px-2 py-1 rounded">${d.cpl == null ? '—' : '$'+d.cpl.toFixed(2)}</span></td>
-      <td class="py-2 px-2 text-right ${d.cpr == null ? 'heat-na' : 'heat-good'}"><span class="px-2 py-1 rounded">${d.cpr == null ? '—' : '$'+d.cpr.toFixed(2)}</span></td>
-      <td class="py-2 px-2 text-right ${d.cpqb == null ? 'heat-na' : 'heat-good'}"><span class="px-2 py-1 rounded">${d.cpqb == null ? '—' : '$'+d.cpqb}</span></td>
-      <td class="py-2 px-2 text-right text-white">${d.leads}</td>
-      <td class="py-2 px-2 text-right text-white">${d.booked}</td>
-    </tr>
-  `).join('');
+  // Daily heatmap table — uses real Meta data if synced, else empty state
+  const daily = Array.isArray(a.metaDaily) ? a.metaDaily : [];
+  const dailyTbl = document.getElementById('daily-table');
+  if (daily.length === 0) {
+    dailyTbl.innerHTML = `<tr><td colspan="12" class="py-12 text-center text-dark-500 text-sm"><div class="mb-2">No daily data yet</div><div class="text-xs">Click <span class="text-blue-400 font-semibold">Sync Meta</span> in the header to pull daily breakdown from Meta API</div></td></tr>`;
+  } else {
+    const heatClass = (k, v) => {
+      if (v == null) return 'heat-na';
+      return checkThreshold(k, v) === 'good' ? 'heat-good' : 'heat-bad';
+    };
+    const safe = (v, fmt) => v == null || isNaN(v) ? '—' : fmt(v);
+    dailyTbl.innerHTML = daily.map(d => `
+      <tr class="heat-row">
+        <td class="py-2 px-2 text-dark-300">${d.date || '—'}</td>
+        <td class="py-2 px-2 text-right text-white font-medium">${safe(d.spend, v => '$'+v.toFixed(2))}</td>
+        <td class="py-2 px-2 text-right ${heatClass('ctr', d.ctr)}"><span class="px-2 py-1 rounded">${safe(d.ctr, v => v.toFixed(2)+'%')}</span></td>
+        <td class="py-2 px-2 text-right ${heatClass('cpc', d.cpc)}"><span class="px-2 py-1 rounded">${safe(d.cpc, v => '$'+v.toFixed(2))}</span></td>
+        <td class="py-2 px-2 text-right ${d.survey >= 2 ? 'heat-good' : 'heat-bad'}"><span class="px-2 py-1 rounded">${safe(d.survey, v => v.toFixed(1)+'%')}</span></td>
+        <td class="py-2 px-2 text-right ${heatClass('cpm', d.cpm)}"><span class="px-2 py-1 rounded">${safe(d.cpm, v => '$'+v.toFixed(2))}</span></td>
+        <td class="py-2 px-2 text-right ${heatClass('frequency', d.freq)}"><span class="px-2 py-1 rounded">${safe(d.freq, v => v.toFixed(2))}</span></td>
+        <td class="py-2 px-2 text-right ${d.cpl == null ? 'heat-na' : d.cpl <= a.cplGoal ? 'heat-good' : 'heat-bad'}"><span class="px-2 py-1 rounded">${safe(d.cpl, v => '$'+v.toFixed(2))}</span></td>
+        <td class="py-2 px-2 text-right ${d.cpr == null ? 'heat-na' : 'heat-good'}"><span class="px-2 py-1 rounded">${safe(d.cpr, v => '$'+v.toFixed(2))}</span></td>
+        <td class="py-2 px-2 text-right ${d.cpqb == null ? 'heat-na' : 'heat-good'}"><span class="px-2 py-1 rounded">${safe(d.cpqb, v => '$'+v)}</span></td>
+        <td class="py-2 px-2 text-right text-white">${d.leads != null ? d.leads : '—'}</td>
+        <td class="py-2 px-2 text-right text-white">${d.booked != null ? d.booked : '—'}</td>
+      </tr>
+    `).join('');
+  }
 
-  // Campaign summary KPIs
-  const totalSpentRange = daily.reduce((s,d)=>s+d.spend,0);
-  const totalBookedRange = daily.reduce((s,d)=>s+d.booked,0);
-  const totalLeadsRange = daily.reduce((s,d)=>s+d.leads,0);
+  // Campaign summary KPIs (handles null gracefully)
+  const totalSpentRange = daily.reduce((s,d)=>s+(d.spend||0),0);
+  const totalBookedRange = daily.reduce((s,d)=>s+(d.booked||0),0);
+  const totalLeadsRange = daily.reduce((s,d)=>s+(d.leads||0),0);
+  const fmtN = (v, fmt) => (typeof v === 'number' && !isNaN(v)) ? fmt(v) : '—';
   document.getElementById('campaign-summary').innerHTML = `
-    ${summaryCard('SPEND', '$'+Math.round(totalSpentRange).toLocaleString(), true, 'text-blue-400')}
-    ${summaryCard('BOOKINGS', totalBookedRange, true, 'text-cyan-400')}
-    ${summaryCard('LEADS', totalLeadsRange, false, 'text-white')}
-    ${summaryCard('AVG CPL', '$'+a.cpl.toFixed(2), false, 'text-white')}
-    ${summaryCard('LINK CTR', a.ctr.toFixed(2)+'%', false, ctrTone==='good'?'text-green-400':'text-red-400')}
-    ${summaryCard('AVG CPC', '$0.71', false, 'text-white')}
-    ${summaryCard('CPM', '$'+a.cpm.toFixed(2), false, cpmTone==='good'?'text-green-400':cpmTone==='warn'?'text-yellow-400':'text-yellow-400')}
-    ${summaryCard('AVG FREQ', a.frequency.toFixed(2), false, 'text-green-400')}
-    ${summaryCard('SPEED', '0m', false, 'text-green-400')}
-    ${summaryCard('IMPRESSIONS', '44.9K', false, 'text-white')}
+    ${summaryCard('SPEND', daily.length ? '$'+Math.round(totalSpentRange).toLocaleString() : '—', true, 'text-blue-400')}
+    ${summaryCard('BOOKINGS', daily.length ? totalBookedRange : '—', true, 'text-cyan-400')}
+    ${summaryCard('LEADS', daily.length ? totalLeadsRange : '—', false, 'text-white')}
+    ${summaryCard('AVG CPL', fmtN(a.cpl, v => '$'+v.toFixed(2)), false, 'text-white')}
+    ${summaryCard('LINK CTR', fmtN(a.ctr, v => v.toFixed(2)+'%'), false, ctrTone==='good'?'text-green-400':'text-red-400')}
+    ${summaryCard('AVG CPC', fmtN(a.cpc, v => '$'+v.toFixed(2)), false, 'text-white')}
+    ${summaryCard('CPM', fmtN(a.cpm, v => '$'+v.toFixed(2)), false, cpmTone==='good'?'text-green-400':cpmTone==='warn'?'text-yellow-400':'text-yellow-400')}
+    ${summaryCard('AVG FREQ', fmtN(a.frequency, v => v.toFixed(2)), false, 'text-green-400')}
+    ${summaryCard('SPEED', '—', false, 'text-dark-500')}
+    ${summaryCard('IMPRESSIONS', '—', false, 'text-dark-500')}
   `;
 
   // Spend / Bookings chart
@@ -2940,8 +2797,12 @@ function renderClient(a) {
   });
 
   // Ads Management
-  const ads = isThompson ? thompsonAds : generateAdsFor(a);
-  document.getElementById('ads-tree').innerHTML = ads.campaigns.map(c => `
+  const ads = (a.metaAdsTree && a.metaAdsTree.campaigns && a.metaAdsTree.campaigns.length) ? a.metaAdsTree : { campaigns: [] };
+  const adsTreeEl = document.getElementById('ads-tree');
+  if (ads.campaigns.length === 0) {
+    adsTreeEl.innerHTML = `<div class="p-8 text-center text-dark-500 text-sm border border-dashed border-dark-600/40 rounded-xl"><div class="mb-2">No ads loaded yet</div><div class="text-xs">Click <span class="text-blue-400 font-semibold">Sync Meta</span> in the header to pull campaigns / ad sets / ads from Meta API</div></div>`;
+  } else {
+    adsTreeEl.innerHTML = ads.campaigns.map(c => `
     <div class="border border-dark-600/40 rounded-xl mb-3 overflow-hidden">
       <div class="bg-dark-800/50 px-4 py-3 flex items-center gap-3">
         <span class="text-dark-400">▾</span>
@@ -2966,6 +2827,7 @@ function renderClient(a) {
       `).join('')}
     </div>
   `).join('');
+  }
 }
 
 function kpiCard(label, value, sub, valueClass='text-white') {
