@@ -249,8 +249,11 @@
   .acct-table td { padding:10px 8px; border-bottom:1px solid rgba(30,41,59,0.45); white-space:nowrap; text-align:right; }
   .acct-table td.left { text-align:left; }
   .acct-table td.center { text-align:center; }
-  .acct-table tr.acct-row { cursor:pointer; }
+  .acct-table tr.acct-row { cursor:default; }
   .acct-table tr.acct-row:hover td { background:rgba(30,41,59,0.35); }
+  .acct-name-link { color:#fff; font-size:0.875rem; font-weight:700; cursor:pointer; padding:2px 4px; border-radius:4px; transition:color 0.15s ease, background 0.15s ease; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .acct-name-link:hover { color:#facc15; background:rgba(250,204,21,0.08); }
+  .toggle-arrow:hover { color:#facc15; background:rgba(250,204,21,0.1); border-radius:4px; }
   .acct-table tr.section-row td { padding:10px 12px; background:linear-gradient(90deg, rgba(34,197,94,0.10), rgba(34,197,94,0.02) 30%, transparent); border-bottom:1px solid rgba(34,197,94,0.25); text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; font-weight:600; }
   .acct-table tr.prev-header td { padding:8px 12px; background:linear-gradient(90deg, rgba(202,138,4,0.10), rgba(202,138,4,0.02) 30%, transparent); border-bottom:1px solid rgba(202,138,4,0.25); text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#facc15; font-weight:600; }
   .acct-table tr.prev-row td { background:rgba(8,12,22,0.4); color:#64748b; }
@@ -406,7 +409,6 @@
       </div>
       <div class="flex items-center gap-1 bg-dark-800/60 border border-dark-600/40 rounded-xl p-1">
         <div onclick="setTab('overview')" id="tab-overview" class="tab active">Overview</div>
-        <div onclick="setTab('accounts')" id="tab-accounts" class="tab">Accounts</div>
         <div onclick="setTab('logbook')" id="tab-logbook" class="tab">Logbook</div>
         <div onclick="setTab('callcenter')" id="tab-callcenter" class="tab">Call Center</div>
       </div>
@@ -518,33 +520,6 @@
         <div id="sub-header"></div>
         <div id="subaccount-rows" class="space-y-1"></div>
       </div>
-    </section>
-
-    <!-- ============== ACCOUNTS VIEW ============== -->
-    <section id="view-accounts" class="hidden fade-in">
-      <div class="card p-4 mb-4 flex flex-wrap items-center gap-3">
-        <div class="flex items-center gap-2">
-          <button class="px-3 py-1.5 rounded-lg bg-brand-600/20 text-brand-300 text-xs font-semibold">All</button>
-          <button class="px-3 py-1.5 rounded-lg text-dark-400 hover:text-white text-xs">Active</button>
-          <button class="px-3 py-1.5 rounded-lg text-dark-400 hover:text-white text-xs">Q1 Onboarded</button>
-          <button class="px-3 py-1.5 rounded-lg text-dark-400 hover:text-white text-xs">At Risk</button>
-        </div>
-        <div class="flex-1"></div>
-        <div class="flex items-center gap-2">
-          <span class="text-[11px] text-dark-400">Sort:</span>
-          <select id="sort-accounts" class="bg-dark-800/80 border border-dark-600/50 rounded-lg text-xs text-dark-200 px-2 py-1.5 focus:outline-none focus:border-brand-500">
-            <option value="name">Name (A→Z)</option>
-            <option value="health">Health (worst first)</option>
-            <option value="spend">Spend (high→low)</option>
-            <option value="osa">OSA % (high→low)</option>
-            <option value="booked">Booked (high→low)</option>
-          </select>
-        </div>
-      </div>
-      <div class="hidden lg:grid grid-cols-[2fr_0.6fr_0.7fr_0.7fr_0.8fr_1fr_1fr_1.6fr] gap-3 px-4 mb-2 text-[10px] uppercase tracking-wider text-dark-500 font-semibold">
-        <div>Account · Cycle</div><div class="text-center">Leads</div><div class="text-center">OSA</div><div class="text-center">Booked</div><div class="text-right">CPL / Goal</div><div class="text-right">Spend / Budget</div><div>Spend Progress</div><div class="text-center">KPI Thresholds</div>
-      </div>
-      <div id="accounts-list" class="space-y-2"></div>
     </section>
 
     <!-- ============== LOGBOOK VIEW ============== -->
@@ -760,6 +735,11 @@
           <div id="client-pills" class="flex flex-wrap items-center gap-2 mt-3"></div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
+          <button onclick="syncMetaForCurrentClient()" class="px-3 py-2 rounded-lg bg-blue-500/15 border border-blue-500/30 text-xs text-blue-300 hover:bg-blue-500/25 transition-all flex items-center gap-2" title="Pull fresh insights from Meta API for this cycle">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Sync Meta
+          </button>
+          <span id="meta-sync-status" class="text-[11px] text-dark-400"></span>
           <button onclick="openModal('edit-cycle')" class="px-3 py-2 rounded-lg bg-dark-800/60 border border-dark-600/50 text-xs text-dark-200 hover:text-white hover:border-brand-500 transition-all flex items-center gap-2">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5"/></svg>
             Edit Cycle
@@ -1728,15 +1708,23 @@ function buildAccountRow(a, isPrev) {
   const flagCls = isPrev ? 'vaflag-white' : (!a.ghlLocationId ? 'vaflag-red' : a.aheadBy < -5 ? 'vaflag-yellow' : 'vaflag-white');
 
   const rowClass = isPrev ? 'prev-row' : 'acct-row';
-  const onclick  = isPrev ? '' : `onclick="toggleAcct('${a.name.replace(/'/g, "\\'")}', this)"`;
   const dataAttr = isPrev ? `data-parent="${(a._parent || a.name).replace(/"/g, '&quot;')}"` : '';
+  const safeNameAttr = a.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
-  // First cell (account)
+  // First cell (account):
+  //   - Toggle arrow has its OWN onclick → only this expands/collapses
+  //   - Client name has its OWN onclick → opens the full client dashboard
+  //   - Both stop propagation so they don't interfere with each other
   const accountCell = isPrev
     ? `<td class="left"><div class="flex items-center gap-2 pl-8"><span class="prev-connector"></span><span class="hb hb-mute" style="width:30px;height:30px;font-size:10px;">${healthVal != null ? healthVal : '—'}</span><span class="text-dark-400 text-xs ml-1 truncate">${a.name||''}</span></div></td>`
-    : `<td class="left"><div class="flex items-center gap-2"><span class="toggle-arrow" data-name="${a.name.replace(/"/g, '&quot;')}">▶</span><span class="hb ${hbClass}">${healthVal}</span><span class="text-white text-sm font-bold truncate">${a.name}</span>${extended}${noGhl}${noSheet}${ends}</div></td>`;
+    : `<td class="left"><div class="flex items-center gap-2">
+         <span class="toggle-arrow" data-name="${safeNameAttr}" onclick="event.stopPropagation(); toggleAcct('${safeNameAttr}', this)" title="Show previous cycles">▶</span>
+         <span class="hb ${hbClass}">${healthVal}</span>
+         <span class="acct-name-link" onclick="event.stopPropagation(); openClient('${safeNameAttr}')" title="Open ${safeNameAttr}">${a.name}</span>
+         ${extended}${noGhl}${noSheet}${ends}
+       </div></td>`;
 
-  return `<tr class="${rowClass}" ${onclick} ${dataAttr}>
+  return `<tr class="${rowClass}" ${dataAttr}>
     ${accountCell}
     <td class="center"><span class="vaflag ${flagCls}"></span></td>
     <td class="center">${ftgEl}</td>
@@ -1770,11 +1758,12 @@ function renderAccountTable() {
   tbody.innerHTML = html.join('');
 }
 
-function toggleAcct(name, arrowEl) {
-  const arrow = arrowEl.querySelector('.toggle-arrow');
-  const tr = arrowEl;
+function toggleAcct(name, arrowSpan) {
+  // arrowSpan is the .toggle-arrow itself; the tr is the closest row
+  const arrow = arrowSpan;
+  const tr = arrowSpan.closest('tr');
+  if (!tr) return;
   const tbody = tr.parentNode;
-  const safeName = name.replace(/"/g, '&quot;');
 
   // Check if already expanded
   const next = tr.nextElementSibling;
@@ -2244,10 +2233,32 @@ async function pushToLogbookSheet(rowIdx, field, value) {
   const col = SHEET_COL_MAP[field];
   if (!col) { console.warn('Unknown logbook field:', field); return; }
   const cell = col + (rowIdx + 2); // +2 = header row offset
-  return writeToSheet({ sheetId: LOGBOOK_SHEET_ID, tabName: LOGBOOK_TAB_NAME, cell, value });
+  if (!LOGBOOK_WRITE_URL) {
+    console.log(`[stub · no Apps Script URL] would write · ${cell} = "${value}"`);
+    return { ok:false, error:'no url' };
+  }
+  // Dual-format payload — works with old logbook-only script (uses rowIdx/field)
+  // AND with new generic script (uses sheetId/tabName/cell).
+  try {
+    const r = await fetch(LOGBOOK_WRITE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        sheetId: LOGBOOK_SHEET_ID, tabName: LOGBOOK_TAB_NAME, cell: cell,
+        rowIdx: rowIdx, field: field,
+        value: value,
+      }),
+    });
+    const result = await r.json();
+    if (!result.ok) console.error('Logbook write error:', result.error);
+    else console.log(`✓ wrote ${LOGBOOK_TAB_NAME}!${result.cell || cell} = "${value}"`);
+    return result;
+  } catch (e) {
+    console.error('Logbook write failed:', e);
+    return { ok:false, error:e.toString() };
+  }
 }
 
-// Use after we know the column letter of the field in the accounts sheet (set during read)
 async function pushToAccountsSheet(rowIdx, col, value) {
   const cell = col + (rowIdx + 2);
   return writeToSheet({ sheetId: ACCOUNTS_SHEET_ID, tabName: ACCOUNTS_TAB_NAME, cell, value });
@@ -2524,7 +2535,7 @@ function openClient(name) {
   const a = accounts.find(x => x.name === name);
   if (!a) return;
   // hide other views and header
-  ['overview','accounts','logbook','callcenter'].forEach(n=>document.getElementById('view-'+n).classList.add('hidden'));
+  ['overview','logbook','callcenter'].forEach(n=>document.getElementById('view-'+n).classList.add('hidden'));
   document.getElementById('dashboard-header').classList.add('hidden');
   document.getElementById('view-client').classList.remove('hidden');
   renderClient(a);
@@ -2533,7 +2544,7 @@ function openClient(name) {
 function closeClient() {
   document.getElementById('view-client').classList.add('hidden');
   document.getElementById('dashboard-header').classList.remove('hidden');
-  setTab('accounts');
+  setTab('overview');
 }
 function setSubTab(t) {
   ['stats','creative'].forEach(n=>{
@@ -2962,7 +2973,7 @@ function setTab(name, ev) {
   if (ev) ev.preventDefault();
   document.getElementById('view-client').classList.add('hidden');
   document.getElementById('dashboard-header').classList.remove('hidden');
-  ['overview','accounts','logbook','callcenter'].forEach(n=>{
+  ['overview','logbook','callcenter'].forEach(n=>{
     document.getElementById('view-'+n).classList.add('hidden');
     document.getElementById('tab-'+n).classList.remove('active');
     const navEl = document.getElementById('nav-'+n);
@@ -2985,54 +2996,109 @@ function closeSidebar() {
 }
 
 /* ============================================================
-   META MARKETING API INTEGRATION
+   META MARKETING API INTEGRATION (via Apps Script proxy)
    ------------------------------------------------------------
-   To enable live data:
-     1. Set META_ACCESS_TOKEN below (or load from .env)
-     2. Call syncMetaData() — it loops through every account
-        in `accounts[]` and writes Meta insights into the
-        same fields the spreadsheet headers map to.
-   The field mapping below is the single source of truth — if
-   Meta renames a field, change it once here.
+   Meta Graph API blocks browser CORS, AND we don't want the access
+   token in client-side code. So we route through the same Apps
+   Script that handles sheet writes. The token lives in Apps Script
+   PropertiesService (encrypted, server-side only).
+
+   Setup:
+     1. Open the Apps Script project (script.google.com)
+     2. Run `setMetaToken` from the Run menu, paste your long-lived
+        token (Meta dev tools → Graph API Explorer → ads_read scope)
+     3. Redeploy the Apps Script
+     4. Click "Sync Meta" on any client detail page
+
+   The dashboard hits the Apps Script with action='metaInsights'/
+   'metaDaily'/'metaAds' and gets back JSON the UI consumes.
    ============================================================ */
 
-const META_ACCESS_TOKEN = ''; // ← paste your long-lived token
-const META_API_VERSION  = 'v19.0';
+const META_PROXY_URL = LOGBOOK_WRITE_URL; // same Apps Script endpoint
 
-// Maps Meta /insights response → our account schema (= spreadsheet headers)
-const META_FIELD_MAP = {
-  spent:     i => parseFloat(i.spend),
-  ctr:       i => parseFloat(i.ctr),                    // header: Link CTR
-  cpc:       i => parseFloat(i.cpc),                    // header: Link CPC
-  cpm:       i => parseFloat(i.cpm),                    // header: CPM
-  frequency: i => parseFloat(i.frequency),              // header: Frequency
-  leads:     i => parseInt(i.actions?.find(a => a.action_type === 'lead')?.value || 0),
-  // survey %, OSA, booked, est_booked → come from CRM (GHL), not Meta
-};
-
-async function fetchMetaInsights(adAccountId, dateStart, dateEnd) {
-  const fields = 'spend,impressions,clicks,ctr,cpc,cpm,frequency,actions';
-  const time = `{"since":"${dateStart}","until":"${dateEnd}"}`;
-  const url = `https://graph.facebook.com/${META_API_VERSION}/act_${adAccountId}/insights`
-            + `?fields=${fields}&time_range=${encodeURIComponent(time)}`
-            + `&access_token=${META_ACCESS_TOKEN}`;
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`Meta API ${r.status}`);
-  return (await r.json()).data?.[0];
+// Round-trip helper — POST { action, ...params } → JSON
+async function callMetaProxy(action, params) {
+  if (!META_PROXY_URL) throw new Error('Apps Script URL not configured');
+  const r = await fetch(META_PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action, ...params }),
+  });
+  if (!r.ok) throw new Error(`Proxy ${r.status}`);
+  const json = await r.json();
+  if (!json.ok) throw new Error(json.error || 'Meta API error');
+  return json;
 }
 
-async function syncMetaData() {
-  if (!META_ACCESS_TOKEN) { console.warn('META_ACCESS_TOKEN not set — skipping sync'); return; }
-  for (const a of accounts) {
-    try {
-      const insight = await fetchMetaInsights(a.adAccountId, a.cycleStart, a.cycleEnd);
-      if (!insight) continue;
-      for (const [k, mapper] of Object.entries(META_FIELD_MAP)) a[k] = mapper(insight);
-      // recompute derived
-      a.cpl = a.leads > 0 ? a.spent / a.leads : 0;
-    } catch (e) { console.error(`Meta sync failed for ${a.name}:`, e); }
+// One-time check that the token is set on the Apps Script side
+async function checkMetaTokenStatus() {
+  try {
+    const j = await callMetaProxy('metaCheck', {});
+    return !!j.hasToken;
+  } catch (e) { return false; }
+}
+
+// Account-level rollup for the current cycle
+async function fetchMetaInsights(adAccountId, dateStart, dateEnd) {
+  const j = await callMetaProxy('metaInsights', { adAccountId, dateStart, dateEnd });
+  return j.insights;
+}
+
+// Daily breakdown for the Campaign Performance heatmap
+async function fetchMetaDaily(adAccountId, dateStart, dateEnd) {
+  const j = await callMetaProxy('metaDaily', { adAccountId, dateStart, dateEnd });
+  return j.days;
+}
+
+// Per-ad performance for the Ads Management hierarchy
+async function fetchMetaAds(adAccountId, dateStart, dateEnd) {
+  const j = await callMetaProxy('metaAds', { adAccountId, dateStart, dateEnd });
+  return j.ads;
+}
+
+// Sync Meta data into the active client and re-render the detail page.
+// Called by the "Sync Meta" button on the client header.
+async function syncMetaForCurrentClient() {
+  const a = window.currentClient;
+  if (!a) return;
+  if (!a.adAccountId) {
+    showMetaSyncStatus('error', 'No Ad Account ID set for this client');
+    return;
   }
-  renderAccounts();
+  showMetaSyncStatus('loading', 'Pulling fresh Meta data…');
+  try {
+    const [insights, daily, ads] = await Promise.all([
+      fetchMetaInsights(a.adAccountId, a.cycleStart, a.cycleEnd).catch(e => { throw new Error('Insights: ' + e.message); }),
+      fetchMetaDaily(a.adAccountId, a.cycleStart, a.cycleEnd).catch(e => { throw new Error('Daily: ' + e.message); }),
+      fetchMetaAds(a.adAccountId, a.cycleStart, a.cycleEnd).catch(e => { throw new Error('Ads: ' + e.message); }),
+    ]);
+    // Merge top-level insights into the account
+    Object.assign(a, {
+      spent:       insights.spend,
+      ctr:         insights.ctr,
+      cpc:         insights.cpc,
+      cpm:         insights.cpm,
+      frequency:   insights.frequency,
+      leads:       insights.leads || a.leads,
+      cpl:         insights.leads > 0 ? insights.spend / insights.leads : a.cpl,
+    });
+    a.metaDaily = daily;
+    a.metaAds   = ads;
+    renderClient(a);
+    showMetaSyncStatus('success', `Synced · ${daily.length} days · ${ads.length} ads`);
+  } catch (e) {
+    console.error('Meta sync failed:', e);
+    showMetaSyncStatus('error', e.message);
+  }
+}
+
+function showMetaSyncStatus(type, msg) {
+  const el = document.getElementById('meta-sync-status');
+  if (!el) return;
+  const colors = { loading:'text-yellow-400', success:'text-green-400', error:'text-red-400' };
+  el.className = `text-[11px] font-medium ${colors[type] || 'text-dark-400'}`;
+  el.textContent = msg;
+  if (type === 'success') setTimeout(() => { el.textContent = ''; }, 4000);
 }
 
 /* ============================================================
