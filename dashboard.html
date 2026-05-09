@@ -457,49 +457,108 @@
         </div>
       </div>
 
-      <!-- All Accounts — embedded Google Sheet (read + write directly in the dashboard) -->
-      <div class="flex items-center justify-between gap-2 mb-4">
-        <div class="flex items-center gap-2">
-          <div class="w-1 h-5 bg-brand-400 rounded"></div>
-          <h2 class="text-xl font-extrabold text-white">All Accounts</h2>
-          <span class="text-[11px] text-dark-400 ml-1">· edit any cell directly — changes save to the sheet automatically</span>
-        </div>
-        <a href="https://docs.google.com/spreadsheets/d/1q0giHbBpxb-g9jnpvbK_E26Qt4KuwjjZSbiZXOgsmr4/edit" target="_blank" class="text-[11px] text-dark-400 hover:text-brand-400 transition-colors flex items-center gap-1">
-          Open in Google Sheets
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-        </a>
+      <!-- Account list (every client + expandable previous cycles) -->
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-1 h-5 bg-brand-400 rounded"></div>
+        <h2 class="text-xl font-extrabold text-white">All Accounts</h2>
+        <span class="text-[11px] text-dark-400 ml-1">· click any row to expand previous cycles</span>
       </div>
-      <div class="card p-0 overflow-hidden mb-8 fade-in" style="height: 80vh;">
-        <iframe
-          src="https://docs.google.com/spreadsheets/d/1q0giHbBpxb-g9jnpvbK_E26Qt4KuwjjZSbiZXOgsmr4/edit?usp=sharing&rm=minimal"
-          style="width:100%; height:100%; border:0; background:#0f172a;"
-          allow="clipboard-read; clipboard-write"
-          loading="lazy">
-        </iframe>
+
+      <!-- Live diagnostic banner — always visible. Shows loading on first load,
+           green when synced, red with fix instructions if the read fails. -->
+      <div id="accounts-status-banner" class="mb-4 p-3 rounded-xl border text-xs" style="background:rgba(250,204,21,0.06); border:1px solid rgba(250,204,21,0.25); color:#fef3c7;">
+        <span class="text-yellow-400">⟳</span> Loading accounts from spreadsheet…
+      </div>
+
+      <div class="card p-0 overflow-hidden mb-8 fade-in">
+        <div class="overflow-x-auto" style="max-height:80vh;">
+          <table class="acct-table">
+            <thead>
+              <tr>
+                <th class="left" style="min-width:280px;">Account</th>
+                <th class="center">VA<br>Flag</th>
+                <th class="center">FTG</th>
+                <th class="left">Cycle</th>
+                <th class="left">Cycle Window</th>
+                <th>Leads</th>
+                <th>Booked</th>
+                <th>Projected</th>
+                <th>CPA Goal</th>
+                <th>CPA</th>
+                <th>Spend</th>
+                <th>CTR</th>
+                <th>CPC</th>
+                <th>CPM</th>
+                <th>Freq</th>
+                <th>OSA%</th>
+                <th>Survey%</th>
+              </tr>
+            </thead>
+            <tbody id="acct-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
     <!-- ============== LOGBOOK VIEW ============== -->
     <section id="view-logbook" class="hidden fade-in">
-      <!-- Logbook — embedded Google Sheet (read + write directly in the dashboard) -->
-      <div class="flex items-center justify-between gap-2 mb-3">
-        <div class="flex items-center gap-2">
-          <div class="w-1 h-5 bg-brand-400 rounded"></div>
-          <h2 class="text-xl font-extrabold text-white">Logbook</h2>
-          <span class="text-[11px] text-dark-400 ml-1">· edit any cell directly — changes save to the sheet automatically</span>
+      <!-- GHL Connection banner -->
+      <div class="card p-4 mb-4 fade-in" style="background: linear-gradient(135deg, rgba(168,85,247,0.06), rgba(15,23,42,0.6)); border-color: rgba(168,85,247,0.25);">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-300">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <div class="text-sm font-semibold text-white">GHL → Sheet ↔ Logbook · Read/Write</div>
+                <span id="lb-sync-pill" class="pill neutral" style="font-size:10px;"><span class="w-1.5 h-1.5 rounded-full bg-dark-400"></span> Initializing…</span>
+              </div>
+              <div id="lb-sync-sub" class="text-[11px] text-dark-400 mt-0.5">GHL automations write rows · VAs edit status &amp; notes inline · changes sync back to the sheet</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="https://docs.google.com/spreadsheets/d/14Uxkf5Ppy9VEkX3PVk76U9C-WSqMfHE-HaR-02ACBxo/edit" target="_blank" class="px-3 py-1.5 rounded-lg bg-dark-700/50 hover:bg-dark-600 text-xs text-dark-200 flex items-center gap-1.5">Open sheet <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+          </div>
         </div>
-        <a href="https://docs.google.com/spreadsheets/d/14Uxkf5Ppy9VEkX3PVk76U9C-WSqMfHE-HaR-02ACBxo/edit" target="_blank" class="text-[11px] text-dark-400 hover:text-brand-400 transition-colors flex items-center gap-1">
-          Open in Google Sheets
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-        </a>
       </div>
-      <div class="card p-0 overflow-hidden mb-4 fade-in" style="height: 80vh;">
-        <iframe
-          src="https://docs.google.com/spreadsheets/d/14Uxkf5Ppy9VEkX3PVk76U9C-WSqMfHE-HaR-02ACBxo/edit?usp=sharing&rm=minimal"
-          style="width:100%; height:100%; border:0; background:#0f172a;"
-          allow="clipboard-read; clipboard-write"
-          loading="lazy">
-        </iframe>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6 stagger" id="logbook-funnel"></div>
+      <!-- Filters -->
+      <div class="card p-4 mb-4 fade-in">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[220px] relative">
+            <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+            <input id="lb-search" type="text" placeholder="Search name, address, subaccount, or follow-up notes…" oninput="renderLogbook()" class="w-full bg-dark-800 border border-dark-600 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-dark-500 focus:outline-none focus:border-brand-500">
+          </div>
+          <select id="lb-va-filter" onchange="renderLogbook()" class="bg-dark-800 border border-dark-600 rounded-lg text-xs text-dark-200 px-3 py-2"><option value="">All VAs</option></select>
+          <select id="lb-status-filter" onchange="renderLogbook()" class="bg-dark-800 border border-dark-600 rounded-lg text-xs text-dark-200 px-3 py-2">
+            <option value="">All statuses</option>
+            <option>Not booked</option><option>Not responding</option><option>Manual Booked</option><option>Confirmed</option><option>Unconfirmed</option><option>Satellite Quote</option><option>Reschedule Needed</option><option>Cancelled/Invalid</option><option>Call back</option><option>Client handles</option>
+          </select>
+          <select id="lb-sub-filter" onchange="renderLogbook()" class="bg-dark-800 border border-dark-600 rounded-lg text-xs text-dark-200 px-3 py-2"><option value="">All subaccounts</option></select>
+          <!-- Date stepper -->
+          <div class="flex items-center gap-0.5 bg-dark-800 border border-dark-600 rounded-lg p-0.5 relative">
+            <button onclick="lbDateStep(-1)" title="Previous day" class="px-2 py-1 hover:bg-dark-700 rounded text-dark-300 hover:text-white text-xs">◀</button>
+            <button onclick="document.getElementById('lb-date-input').showPicker && document.getElementById('lb-date-input').showPicker(); document.getElementById('lb-date-input').focus();" id="lb-date-label" class="px-3 py-1 text-xs text-white font-semibold whitespace-nowrap min-w-[100px] text-center hover:bg-dark-700 rounded">All dates</button>
+            <button onclick="lbDateStep(1)" title="Next day" class="px-2 py-1 hover:bg-dark-700 rounded text-dark-300 hover:text-white text-xs">▶</button>
+            <button onclick="lbDateClear()" id="lb-date-clear" class="px-2 py-1 hover:bg-dark-700 rounded text-dark-500 hover:text-white text-xs hidden">✕</button>
+            <input type="date" id="lb-date-input" onchange="lbDateSet(this.value)" class="absolute inset-0 opacity-0 pointer-events-none">
+          </div>
+          <span class="text-xs text-dark-400 whitespace-nowrap">Showing <span id="lb-count" class="text-white font-bold">—</span> of <span id="lb-total" class="text-white">—</span></span>
+        </div>
+      </div>
+      <!-- Logbook table -->
+      <div class="card p-0 overflow-hidden mb-4 fade-in">
+        <div class="overflow-x-auto" style="max-height:65vh;">
+          <table class="lb-table">
+            <thead>
+              <tr>
+                <th>VA</th><th>Date</th><th>Subaccount</th><th>Name</th><th>Address</th><th>Distance &amp; Drive Time</th><th>Status</th><th>Sched.</th><th>Who Confirmed</th><th>Date Conf.</th><th>1st Call</th><th>2nd Call</th><th>3rd Call</th><th>4th Call</th><th>5th Call</th>
+              </tr>
+            </thead>
+            <tbody id="lb-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -1930,7 +1989,7 @@ const LOGBOOK_TAB_NAME    = 'TEST LOGBOOK';
 const ACCOUNTS_SHEET_ID   = '1q0giHbBpxb-g9jnpvbK_E26Qt4KuwjjZSbiZXOgsmr4';
 const ACCOUNTS_TAB_NAME   = 'All Accounts';
 
-const LOGBOOK_WRITE_URL   = 'https://script.google.com/macros/s/AKfycbyyutRjog-sGP-M1O-K_EBYReRFAyPII2S5v6lhzErKwupKHTo-XauAT1hkB4csz-7Dlw/exec';
+const LOGBOOK_WRITE_URL   = 'https://script.google.com/macros/s/AKfycbw_H243pM1NKMFwWz5bFs69qDr-iaRSZI26r-4SYYOEvk6swZyHlLwE2UMidXLhjRVhhQ/exec';
 
 // Logbook columns: field name → spreadsheet column letter
 const SHEET_COL_MAP = {
@@ -2032,24 +2091,54 @@ function parseCSV(text) {
   return rows;
 }
 
+// Unified sheet read helper.
+// Strategy: try Apps Script JSON proxy first (uses owner-level access — no
+// public sharing required). If that fails or returns nothing, fall back to
+// the gviz CSV endpoint (which requires the sheet to be shared "Anyone with
+// the link"). This way the dashboard reads work regardless of which path is
+// configured.
+async function readSheetRows(sheetId, tabName) {
+  if (!sheetId) throw new Error('missing sheetId');
+
+  // Strategy 1: Apps Script JSON
+  try {
+    const appsScriptUrl = `${LOGBOOK_WRITE_URL}?action=read&sheetId=${encodeURIComponent(sheetId)}&tabName=${encodeURIComponent(tabName || '')}`;
+    const r = await fetch(appsScriptUrl);
+    if (r.ok) {
+      const data = await r.json();
+      if (data && data.ok && Array.isArray(data.rows) && data.rows.length > 0) {
+        console.log(`✓ Read via Apps Script: ${data.rows.length} rows from "${data.sheetName}"`);
+        return { rows: data.rows, source: `Apps Script (${data.sheetName})` };
+      }
+    }
+  } catch (e) {
+    console.log('Apps Script read failed, falling back to gviz:', e.message);
+  }
+
+  // Strategy 2: gviz CSV (requires "Anyone with the link" sharing)
+  const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName || '')}`;
+  const r2 = await fetch(gvizUrl);
+  if (!r2.ok) throw new Error('HTTP ' + r2.status + ' from Google');
+  const csv = await r2.text();
+  if (/<html/i.test(csv.slice(0, 200))) {
+    throw new Error('sheet not public AND Apps Script read endpoint not deployed — redeploy Apps Script or share sheet "Anyone with the link"');
+  }
+  const rows = parseCSV(csv);
+  console.log(`✓ Read via gviz CSV: ${rows.length} rows`);
+  return { rows: rows, source: 'gviz CSV' };
+}
+
 async function pullFromLogbookSheet() {
   if (!LOGBOOK_SHEET_ID) { setLbSyncPill('Disabled', 'neutral', 'bg-dark-400'); return; }
   setLbSyncPill('Syncing…', 'neutral', 'bg-yellow-400');
-  // Public CSV export — no auth needed if sheet is shared "Anyone with link can view"
-  const url = `https://docs.google.com/spreadsheets/d/${LOGBOOK_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(LOGBOOK_TAB_NAME)}`;
   try {
-    const r = await fetch(url);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const csv = await r.text();
-    // Sanity check: if Google redirected us to a login page we'd get HTML not CSV
-    if (/<html/i.test(csv.slice(0, 200))) throw new Error('sheet not public');
-    const rows = parseCSV(csv);
+    const { rows, source } = await readSheetRows(LOGBOOK_SHEET_ID, LOGBOOK_TAB_NAME);
     if (rows.length < 2) throw new Error('no rows');
-    const dataRows = rows.slice(1).filter(r => r.some(c => c && c.trim()));
+    const dataRows = rows.slice(1).filter(r => r.some(c => c && String(c).trim()));
     logbookLeads.length = 0;
     dataRows.forEach(row => {
       const lead = {};
-      SHEET_FIELDS_ORDER.forEach((k, i) => { lead[k] = (row[i] || '').trim(); });
+      SHEET_FIELDS_ORDER.forEach((k, i) => { lead[k] = String(row[i] || '').trim(); });
       logbookLeads.push(lead);
     });
     renderLogbook();
@@ -2057,12 +2146,12 @@ async function pullFromLogbookSheet() {
     if (typeof renderSubaccountBookings === 'function') renderSubaccountBookings();
     if (typeof renderCallCenter === 'function') renderCallCenter();
     setLbSyncPill(`Live · ${logbookLeads.length} rows`, 'up', 'bg-green-400');
-    setLbSyncSubtitle(`Pulled ${logbookLeads.length} survey submits from the sheet · last sync just now · re-syncs on Refresh Data`);
+    setLbSyncSubtitle(`Pulled ${logbookLeads.length} survey submits from the sheet via ${source} · last sync just now`);
     lastLogbookSyncStatus = 'ok';
   } catch (e) {
-    console.warn('Sheet pull failed, using demo data:', e.message);
-    setLbSyncPill('Demo data · sheet not accessible', 'warn', 'bg-yellow-400');
-    setLbSyncSubtitle('Could not read the sheet. Make sure it is shared "Anyone with the link can view" — or wire OAuth/Apps Script for private access.');
+    console.warn('Logbook pull failed:', e.message);
+    setLbSyncPill('Sync failed', 'warn', 'bg-red-400');
+    setLbSyncSubtitle(`Could not read the logbook sheet: ${e.message}`);
     lastLogbookSyncStatus = `failed: ${e.message}`;
   }
 }
@@ -2174,14 +2263,8 @@ function colIdxToLetter(i) {
 
 async function pullFromAccountsSheet() {
   if (!ACCOUNTS_SHEET_ID) return;
-  // Same simple gviz CSV read as the logbook — sheet must be shared "Anyone with the link"
-  const url = `https://docs.google.com/spreadsheets/d/${ACCOUNTS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(ACCOUNTS_TAB_NAME)}`;
   try {
-    const r = await fetch(url);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const csv = await r.text();
-    if (/<html/i.test(csv.slice(0, 200))) throw new Error('sheet not public');
-    const rows = parseCSV(csv);
+    const { rows, source } = await readSheetRows(ACCOUNTS_SHEET_ID, ACCOUNTS_TAB_NAME);
     if (rows.length < 2) throw new Error('no rows');
 
     // Map column index → dashboard field via header normalization
@@ -2250,7 +2333,7 @@ async function pullFromAccountsSheet() {
     if (typeof renderCommandCenter === 'function')  renderCommandCenter();
     if (typeof renderAccounts === 'function')       renderAccounts();
 
-    console.log(`✓ Accounts pull: ${accounts.length} accounts loaded`);
+    console.log(`✓ Accounts pull: ${accounts.length} accounts loaded via ${source}`);
     showAccountsBanner('ok', accounts.length);
     lastAccountsSyncStatus = 'ok';
   } catch (e) {
