@@ -2455,18 +2455,38 @@ async function pullFromAccountsSheet() {
     //  - rows without an account name
     const dataRows = rows.slice(1);
     const cycleRows = [];
+    let skippedNoCycle = 0, skippedNoName = 0, blankRows = 0;
+    const skippedSamples = [];
     dataRows.forEach((row, dataRowIdx) => {
+      // Detect fully-blank rows (all empty cells)
+      const hasAnyContent = row.some(c => c && c.trim());
+      if (!hasAnyContent) { blankRows++; return; }
+
       const obj = {};
       Object.entries(colIdxToField).forEach(([i, field]) => {
         let v = row[i] !== undefined ? row[i].trim() : '';
         if (NUMERIC_FIELDS.has(field) && v !== '') v = coerceNumber(v);
         obj[field] = v;
       });
+
+      // Normalize the account name: trim, collapse internal whitespace.
+      // This prevents "J.M.K. Contracting" and "J.M.K.  Contracting" from
+      // being treated as different accounts.
+      if (obj.name) obj.name = String(obj.name).trim().replace(/\s+/g, ' ');
+
       const cycleNum = parseCycleNumber(obj.cycle);
-      if (cycleNum == null) return;       // not a cycle row → skip
-      if (!obj.name)         return;       // no account name → skip
+      if (cycleNum == null) {
+        skippedNoCycle++;
+        if (skippedSamples.length < 5) skippedSamples.push({ sheetRow: dataRowIdx + 2, name: obj.name || '(blank)', cycle: obj.cycle || '(blank)', reason: 'no parseable cycle' });
+        return;
+      }
+      if (!obj.name) {
+        skippedNoName++;
+        if (skippedSamples.length < 5) skippedSamples.push({ sheetRow: dataRowIdx + 2, cycle: obj.cycle, reason: 'no name' });
+        return;
+      }
       obj.cycle  = cycleNum;
-      obj.status = 'Active';               // mark current cycles as Active so the LIVE filter includes them
+      obj.status = 'Active';
       cycleRows.push({ sheetRowIdx: dataRowIdx, fields: obj });
     });
 
@@ -2506,9 +2526,18 @@ async function pullFromAccountsSheet() {
     if (typeof renderCommandCenter === 'function')  renderCommandCenter();
     if (typeof renderAccounts === 'function')       renderAccounts();
 
-    console.log(`✓ accounts sheet · ${accounts.length} live accounts · ${Object.keys(newHistory).length} have prior cycles`);
-    console.log(`  mapped fields: ${Object.keys(fieldToColLetter).join(', ')}`);
-    if (unmappedHeaders.length) console.log(`  unmapped headers (add aliases if needed): ${unmappedHeaders.filter(Boolean).join(' | ')}`);
+    // ─── Diagnostic logging ──────────────────────────────────────
+    console.log(`%c━━━ ACCOUNTS SHEET PULL ━━━`, 'color:#facc15;font-weight:bold');
+    console.log(`  Total rows in sheet: ${rows.length} (1 header + ${dataRows.length} data)`);
+    console.log(`  ✓ Cycle rows accepted: ${cycleRows.length}`);
+    console.log(`  ⨯ Skipped (no parseable cycle): ${skippedNoCycle}  ← KPI row, manager labels, account-header rows`);
+    console.log(`  ⨯ Skipped (no name): ${skippedNoName}`);
+    console.log(`  ⨯ Skipped (fully blank): ${blankRows}`);
+    if (skippedSamples.length) console.log(`  Sample skipped rows:`, skippedSamples);
+    console.log(`%c→ Final: ${accounts.length} live accounts · ${Object.keys(newHistory).length} have prior cycles`, 'color:#22c55e;font-weight:bold');
+    console.log(`  Accounts found: ${accounts.map(a => `${a.name} (cycle ${a.cycle}, ${(newHistory[a.name]||[]).length+1} total cycles)`).join(' | ')}`);
+    console.log(`  Mapped columns: ${Object.keys(fieldToColLetter).join(', ')}`);
+    if (unmappedHeaders.length) console.log(`  Unmapped headers (tell Claude to add aliases): ${unmappedHeaders.filter(Boolean).join(' | ')}`);
   } catch (e) {
     console.warn('Accounts sheet pull failed, keeping demo data:', e.message);
   }
@@ -3389,18 +3418,42 @@ function prepareEditCycle(a) {
   lenInput.oninput = auto;
   startInput.oninput = auto;
 }
+/* ============================================================
+   WRITE-BACK to All Accounts sheet
+   ------------------------------------------------------------
+   Any edit made in a modal (Edit Cycle, Integrations, Campaign
+   Filter) flows here. Updates local state AND pushes to the
+   sheet. Auto-poll re-reads in 60s so other tabs catch up.
+   ============================================================ */
+async function syncFieldsToAccountsSheet(a, changes) {
+  const writes = [];
+  for (const [field, newValue] of Object.entries(changes)) {
+    if (a[field] === newValue) continue;          // unchanged → skip
+    a[field] = newValue;                          // update in-memory immediately
+    if (!ACCOUNTS_COL_BY_FIELD[field]) continue;  // field not in sheet → local-only
+    writes.push(
+      pushAccountField(a.name, field, newValue)
+        .then(() => console.log(`✓ ${a.name} · ${field} = ${newValue}`))
+        .catch(e => console.error(`✗ ${a.name} · ${field}:`, e))
+    );
+  }
+  await Promise.all(writes);
+}
+
 function saveEditCycle() {
   const a = window.currentClient;
-  a.cpaGoal       = parseFloat(document.getElementById('edit-cpa').value);
-  a.bookedGoal    = parseInt(document.getElementById('edit-booked-goal').value);
-  a.cycleLength   = parseInt(document.getElementById('edit-cycle-length').value);
-  a.dailyBudget   = parseInt(document.getElementById('edit-daily-budget').value);
-  a.monthlyBudget = parseInt(document.getElementById('edit-monthly-budget').value);
-  a.cycleStart    = document.getElementById('edit-cycle-start').value;
-  a.cycleEnd      = document.getElementById('edit-cycle-end').value;
+  syncFieldsToAccountsSheet(a, {
+    cycleStart:    document.getElementById('edit-cycle-start').value,
+    cycleEnd:      document.getElementById('edit-cycle-end').value,
+    bookedGoal:    parseInt(document.getElementById('edit-booked-goal').value, 10),
+    dailyBudget:   parseInt(document.getElementById('edit-daily-budget').value, 10),
+    monthlyBudget: parseInt(document.getElementById('edit-monthly-budget').value, 10),
+    // local-only (no sheet column)
+    cpaGoal:     parseFloat(document.getElementById('edit-cpa').value),
+    cycleLength: parseInt(document.getElementById('edit-cycle-length').value, 10),
+  });
   closeModal('edit-cycle');
   renderClient(a);
-  renderAccounts();
 }
 
 function prepareIntegrations(a) {
@@ -3429,13 +3482,16 @@ function setStatusBadge(id, isSet, setLabel, unsetLabel) {
 }
 function saveIntegrations() {
   const a = window.currentClient;
-  a.adAccountId      = document.getElementById('meta-id-input').value.trim();
-  a.metaTokenBackup  = document.getElementById('meta-token-input').value.trim();
-  a.ghlLocationId    = document.getElementById('ghl-loc-input').value.trim();
-  a.ghlApiKey        = document.getElementById('ghl-key-input').value.trim();
-  a.leadSheetUrl     = document.getElementById('leadsheet-input').value.trim();
+  syncFieldsToAccountsSheet(a, {
+    adAccountId:     document.getElementById('meta-id-input').value.trim(),
+    // local-only (no sheet column for these yet)
+    metaTokenBackup: document.getElementById('meta-token-input').value.trim(),
+    ghlLocationId:   document.getElementById('ghl-loc-input').value.trim(),
+    ghlApiKey:       document.getElementById('ghl-key-input').value.trim(),
+    leadSheetUrl:    document.getElementById('leadsheet-input').value.trim(),
+  });
   closeModal('integrations');
-  renderClient(a); // refresh header pills (NO GHL, NO LEAD SHEET will update)
+  renderClient(a);
 }
 
 function prepareCampaignFilter(a) {
@@ -3446,8 +3502,10 @@ function prepareCampaignFilter(a) {
 }
 function saveCampaignFilter() {
   const a = window.currentClient;
-  a.campaignFilter = document.getElementById('filter-keyword').value.trim();
-  a.campaignFilterScope = document.querySelector('input[name="filter-scope"]:checked').value;
+  syncFieldsToAccountsSheet(a, {
+    campaignFilter:      document.getElementById('filter-keyword').value.trim(),
+    campaignFilterScope: document.querySelector('input[name="filter-scope"]:checked').value, // local-only
+  });
   closeModal('campaign-filter');
 }
 
