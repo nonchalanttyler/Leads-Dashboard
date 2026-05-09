@@ -381,8 +381,8 @@
 
     <div class="p-4 border-t border-dark-600/30">
       <div class="flex items-center gap-2.5 text-xs text-dark-400">
-        <div class="w-2 h-2 rounded-full bg-green-500 pulse"></div>
-        <span>Meta API · Synced 2m ago</span>
+        <div id="sidebar-sync-dot" class="w-2 h-2 rounded-full bg-dark-500"></div>
+        <span id="sidebar-sync-text">Sheets · not synced yet</span>
       </div>
       <button onclick="refreshAllSheetData()" class="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-dark-700/50 hover:bg-dark-600/50 text-dark-300 hover:text-white text-xs transition-all">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -404,7 +404,7 @@
     <!-- ============== DASHBOARD HEADER (visible on overview/accounts/logbook tabs only) ============== -->
     <div id="dashboard-header" class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 fade-in">
       <div>
-        <div class="text-xs uppercase tracking-[0.18em] text-brand-400/90 font-semibold">Saturday · May 9, 2026</div>
+        <div id="header-date" class="text-xs uppercase tracking-[0.18em] text-brand-400/90 font-semibold">—</div>
         <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight mt-1">Command Center</h1>
       </div>
       <div class="flex items-center gap-1 bg-dark-800/60 border border-dark-600/40 rounded-xl p-1">
@@ -621,8 +621,8 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
           </div>
-          <div class="text-2xl font-extrabold text-white">8m 12s</div>
-          <div class="flex items-center gap-2 mt-2"><span class="pill up">▼ 23% vs last wk</span></div>
+          <div id="cc-median-s2l" class="text-2xl font-extrabold text-white">—</div>
+          <div id="cc-median-s2l-sub" class="text-[11px] text-dark-500 mt-2">requires GHL timestamps</div>
         </div>
         <div class="kpi-card p-5">
           <div class="flex items-center justify-between mb-3">
@@ -631,8 +631,8 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
             </div>
           </div>
-          <div class="text-2xl font-extrabold text-white">31.4%</div>
-          <div class="flex items-center gap-2 mt-2"><span class="pill up">▲ 4.2% vs last wk</span></div>
+          <div id="cc-l2b-rate" class="text-2xl font-extrabold text-white">—</div>
+          <div id="cc-l2b-sub" class="text-[11px] text-dark-500 mt-2">computed from logbook</div>
         </div>
         <div class="kpi-card p-5">
           <div class="flex items-center justify-between mb-3">
@@ -641,8 +641,8 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
             </div>
           </div>
-          <div class="text-2xl font-extrabold text-white">62%</div>
-          <div class="flex items-center gap-2 mt-2"><span class="pill warn">38% no answer/VM</span></div>
+          <div id="cc-connect-rate" class="text-2xl font-extrabold text-white">—</div>
+          <div id="cc-connect-sub" class="text-[11px] text-dark-500 mt-2">computed from logbook</div>
         </div>
         <div class="kpi-card p-5">
           <div class="flex items-center justify-between mb-3">
@@ -651,8 +651,8 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             </div>
           </div>
-          <div class="text-2xl font-extrabold text-white">2.4</div>
-          <div class="flex items-center gap-2 mt-2"><span class="pill neutral">across 89 booked</span></div>
+          <div id="cc-avg-attempts" class="text-2xl font-extrabold text-white">—</div>
+          <div id="cc-avg-attempts-sub" class="text-[11px] text-dark-500 mt-2">computed from logbook</div>
         </div>
       </div>
 
@@ -665,17 +665,15 @@
             </div>
             <span class="pill neutral">last 7 days</span>
           </div>
-          <div style="height:200px;"><canvas id="s2lChart"></canvas></div>
+          <div id="s2l-empty" class="text-center text-dark-500 text-sm py-12 border border-dashed border-dark-600/40 rounded-lg">
+            <div class="mb-2">No timing data yet</div>
+            <div class="text-xs">This chart needs GHL survey-submit timestamps to plot speed-to-lead distribution</div>
+          </div>
+          <div id="s2l-chart-wrapper" class="hidden" style="height:200px;"><canvas id="s2lChart"></canvas></div>
         </div>
         <div class="card p-5 fade-in">
           <h3 class="text-sm font-semibold text-white mb-4">Lead Outcomes (last 7d)</h3>
-          <div class="space-y-3">
-            <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-green-400"></div><span class="text-xs text-dark-300 flex-1">Booked first try</span><span class="text-sm font-bold text-white">34</span></div>
-            <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-yellow-400"></div><span class="text-xs text-dark-300 flex-1">Booked 2-3 attempts</span><span class="text-sm font-bold text-white">39</span></div>
-            <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-orange-400"></div><span class="text-xs text-dark-300 flex-1">Booked 4+ attempts</span><span class="text-sm font-bold text-white">8</span></div>
-            <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-blue-400"></div><span class="text-xs text-dark-300 flex-1">Still working</span><span class="text-sm font-bold text-white">47</span></div>
-            <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-red-400"></div><span class="text-xs text-dark-300 flex-1">Lost (no answer)</span><span class="text-sm font-bold text-white">142</span></div>
-          </div>
+          <div id="lead-outcomes-list" class="space-y-3"></div>
         </div>
       </div>
 
@@ -823,13 +821,9 @@
               <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
               <h3 class="text-lg font-bold text-white">Cycle Comparison</h3>
             </div>
-            <div class="flex items-center gap-2">
-              <select class="bg-dark-800/80 border border-dark-600/50 rounded-lg text-xs text-dark-200 px-2 py-1.5"><option>Cycle 2</option></select>
-              <span class="text-[11px] text-dark-400">vs</span>
-              <select class="bg-dark-800/80 border border-dark-600/50 rounded-lg text-xs text-dark-200 px-2 py-1.5"><option>Cycle 3</option></select>
-            </div>
+            <div id="cycle-comp-selectors" class="flex items-center gap-2 text-xs text-dark-400"></div>
           </div>
-          <div class="text-[11px] text-dark-400 mb-4">📊 Comparing first <span class="text-brand-400 font-semibold">10 days</span> of each cycle · Cycle 3 is day 10 of 29</div>
+          <div id="cycle-comp-subtitle" class="text-[11px] text-dark-400 mb-4"></div>
           <div id="cycle-comparison" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3"></div>
         </div>
 
@@ -838,7 +832,7 @@
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div class="flex items-center gap-3">
               <h3 class="text-lg font-bold text-white">Campaign Performance</h3>
-              <select class="bg-dark-800/80 border border-dark-600/50 rounded-lg text-xs text-dark-200 px-2 py-1.5"><option>Cycle 3 (Active) · Apr 30, 2026</option></select>
+              <span id="campaign-perf-cycle-label" class="text-xs text-dark-400"></span>
             </div>
             <div class="flex items-center gap-1 bg-dark-800/60 border border-dark-600/40 rounded-lg p-1">
               <span class="toggle-pill active">Daily</span>
@@ -1261,9 +1255,12 @@ function checkThreshold(metric, val) {
   return 'good';
 }
 
+// Manager rollups computed live from the accounts array — no hardcoded counts.
+// Sidebar manager list is rendered from this array; counts get populated by
+// renderManagerSidebar() after every accounts pull.
 const managers = [
-  { name:'Tyler', count:24, color:'#3b82f6', healthy:15, unhealthy:9, bookRate:41.2, books:219, leads:531, avgCPL:106.80, avgCPA:346.31, budget:93800, cpaColor:'#facc15' },
-  { name:'Test',  count:0,  color:'#64748b', healthy:0,  unhealthy:0, bookRate:0,    books:0,   leads:0,   avgCPL:0,      avgCPA:0,      budget:0,     cpaColor:'#ffffff' },
+  { name:'Tyler', color:'#3b82f6' },
+  { name:'Test',  color:'#64748b' },
 ];
 
 const pods = []; // pod overview removed — array kept empty so any stray refs no-op
@@ -1282,45 +1279,32 @@ const thompsonDaily = [];
 // Ads management — empty until Meta Sync runs (look for a.metaAds)
 const thompsonAds = { campaigns: [] };
 
-// Logbook + VAs (carried from prior view)
+// VA roster — names and colors only. Calls/booked/monthly counts are computed
+// from logbookLeads at render time, so we don't have stale fake numbers.
 const vas = [
-  { name:'Ann',      color:'#ec4899', calls:18, booked:3,  monthly:{ '2026-05':3,  '2026-04':5,  '2026-03':4,  '2026-02':2  } },
-  { name:'Bea',      color:'#f97316', calls:21, booked:5,  monthly:{ '2026-05':5,  '2026-04':7,  '2026-03':4,  '2026-02':5  } },
-  { name:'Ed',       color:'#84cc16', calls:31, booked:5,  monthly:{ '2026-05':5,  '2026-04':7,  '2026-03':6,  '2026-02':3  } },
-  { name:'Ena',      color:'#06b6d4', calls:24, booked:6,  monthly:{ '2026-05':6,  '2026-04':8,  '2026-03':5,  '2026-02':4  } },
-  { name:'Jan',      color:'#f59e0b', calls:33, booked:10, monthly:{ '2026-05':10, '2026-04':11, '2026-03':9,  '2026-02':7  } },
-  { name:'Jell',     color:'#a16207', calls:28, booked:12, monthly:{ '2026-05':12, '2026-04':15, '2026-03':11, '2026-02':9  } },
-  { name:'Jessica',  color:'#a855f7', calls:42, booked:11, monthly:{ '2026-05':11, '2026-04':14, '2026-03':10, '2026-02':9  } },
-  { name:'Klae',     color:'#475569', calls:14, booked:4,  monthly:{ '2026-05':4,  '2026-04':3,  '2026-03':4,  '2026-02':2  } },
-  { name:'Lou',      color:'#22d3ee', calls:13, booked:4,  monthly:{ '2026-05':4,  '2026-04':5,  '2026-03':3,  '2026-02':3  } },
-  { name:'Mark',     color:'#3b82f6', calls:51, booked:7,  monthly:{ '2026-05':7,  '2026-04':9,  '2026-03':6,  '2026-02':5  } },
-  { name:'Maykee',   color:'#7c2d12', calls:22, booked:6,  monthly:{ '2026-05':6,  '2026-04':4,  '2026-03':5,  '2026-02':3  } },
-  { name:'Myra',     color:'#eab308', calls:19, booked:5,  monthly:{ '2026-05':5,  '2026-04':6,  '2026-03':5,  '2026-02':4  } },
-  { name:'Pamela',   color:'#1d4ed8', calls:20, booked:6,  monthly:{ '2026-05':6,  '2026-04':5,  '2026-03':7,  '2026-02':4  } },
-  { name:'Reyn',     color:'#0f172a', calls:29, booked:8,  monthly:{ '2026-05':8,  '2026-04':6,  '2026-03':7,  '2026-02':4  } },
-  { name:'Rincee',   color:'#15803d', calls:15, booked:4,  monthly:{ '2026-05':4,  '2026-04':5,  '2026-03':3,  '2026-02':3  } },
-  { name:'Rovy',     color:'#14b8a6', calls:11, booked:3,  monthly:{ '2026-05':3,  '2026-04':4,  '2026-03':2,  '2026-02':3  } },
-  { name:'Veronica', color:'#ef4444', calls:38, booked:9,  monthly:{ '2026-05':9,  '2026-04':12, '2026-03':8,  '2026-02':6  } },
+  { name:'Ann',      color:'#ec4899' },
+  { name:'Bea',      color:'#f97316' },
+  { name:'Ed',       color:'#84cc16' },
+  { name:'Ena',      color:'#06b6d4' },
+  { name:'Jan',      color:'#f59e0b' },
+  { name:'Jell',     color:'#a16207' },
+  { name:'Jessica',  color:'#a855f7' },
+  { name:'Klae',     color:'#475569' },
+  { name:'Lou',      color:'#22d3ee' },
+  { name:'Mark',     color:'#3b82f6' },
+  { name:'Maykee',   color:'#7c2d12' },
+  { name:'Myra',     color:'#eab308' },
+  { name:'Pamela',   color:'#1d4ed8' },
+  { name:'Reyn',     color:'#0f172a' },
+  { name:'Rincee',   color:'#15803d' },
+  { name:'Rovy',     color:'#14b8a6' },
+  { name:'Veronica', color:'#ef4444' },
 ];
-const logbookStatuses = [
-  { label:'Booked', count:81, color:'#22c55e' },
-  { label:'Call back', count:124, color:'#eab308' },
-  { label:'Not booked', count:47, color:'#3b82f6' },
-  { label:'Cancelled/Invalid', count:142, color:'#ef4444' },
-  { label:'DUP', count:9, color:'#a855f7' },
-];
-const subaccounts = [
-  { name:'207 Roofers',calls:42,booked:8,callbacks:14,cancelled:18 },
-  { name:'Combat Roofing',calls:31,booked:6,callbacks:9,cancelled:15 },
-  { name:'Heroic Roofing',calls:14,booked:1,callbacks:3,cancelled:10 },
-  { name:'Integrity Roofing & Construction',calls:38,booked:4,callbacks:8,cancelled:24 },
-  { name:'J Smegal Roofing',calls:8,booked:2,callbacks:4,cancelled:2 },
-  { name:'J.M.K. Contracting',calls:11,booked:5,callbacks:5,cancelled:1 },
-  { name:'Tall Pine Roofing',calls:18,booked:3,callbacks:11,cancelled:3 },
-  { name:'Good Guy Roofing',calls:46,booked:2,callbacks:10,cancelled:33 },
-  { name:'Capital Roofing',calls:21,booked:1,callbacks:5,cancelled:14 },
-  { name:'Hi-5 Roofing',calls:9,booked:2,callbacks:5,cancelled:2 },
-];
+
+// Status counts and subaccount stats are derived from logbookLeads at render
+// time. Leaving these empty so nothing fake leaks into the dashboard.
+const logbookStatuses = [];
+const subaccounts = [];
 
 /* ============================================================
    RENDERERS
@@ -1347,56 +1331,102 @@ function healthBucket(score) {
   return { tone:'bad', label:'At Risk' };
 }
 
-// Sidebar managers
-const sbMgrs = document.getElementById('sidebar-managers');
-managers.forEach(m=>{
-  const a = document.createElement('a');
-  a.href = '#';
-  a.className = 'nav-item w-full flex items-center gap-3 px-4 py-2 text-sm text-dark-200 hover:text-white transition-all cursor-pointer';
-  a.innerHTML = `
-    <div class="w-6 h-6 rounded-full avatar text-[10px] text-white" style="background:${m.color};">${m.name[0]}</div>
-    <span class="font-medium truncate">${m.name}</span>
-    <span class="ml-auto text-[10px] text-dark-500">${m.count}</span>
-  `;
-  sbMgrs.appendChild(a);
-});
+// Sidebar managers — populated by renderManagerSidebar() after each accounts pull
+renderManagerSidebar();
 
 // === COMMAND CENTER (OVERVIEW) ===
-// Top-level KPIs roll up from the managers array
-const CC_TOTAL_ACTIVE   = managers.reduce((s,m)=>s+m.count, 0);
-const CC_TOTAL_INACTIVE = 24;  // not currently in manager rollups
-const CC_TOTAL_LEADS    = managers.reduce((s,m)=>s+m.leads, 0);
-const CC_HEALTHY        = managers.reduce((s,m)=>s+m.healthy, 0);
-const CC_UNHEALTHY      = managers.reduce((s,m)=>s+m.unhealthy, 0);
-const CC_UNSCORED       = Math.max(0, CC_TOTAL_ACTIVE - CC_HEALTHY - CC_UNHEALTHY);
-const CC_BOOKED_TOTAL   = managers.reduce((s,m)=>s+m.books, 0);
-const CC_LEADS_BOOKED   = CC_TOTAL_LEADS;
-const CC_MONTHLY_BUDGET = managers.reduce((s,m)=>s+m.budget, 0);
+// All KPIs computed live from the `accounts` array (populated by sheet pull)
+// and the `logbookLeads` array (populated by logbook pull). When either is
+// empty, KPIs show "—" so it's clear no data has loaded yet.
+
+// Live header date (refreshes every minute so it stays accurate if the tab stays open across midnight)
+function updateHeaderDate() {
+  const el = document.getElementById('header-date');
+  if (!el) return;
+  const now = new Date();
+  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  el.textContent = `${days[now.getDay()]} · ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+}
+updateHeaderDate();
+setInterval(updateHeaderDate, 60 * 1000);
 
 function renderCommandCenter() {
-  // Header counts
-  document.getElementById('cc-active').textContent     = CC_TOTAL_ACTIVE;
-  document.getElementById('cc-inactive').textContent   = CC_TOTAL_INACTIVE;
-  document.getElementById('cc-leads').textContent      = CC_TOTAL_LEADS.toLocaleString();
+  const live = accounts.filter(a => a.status === 'Active');
+
+  // Health rollup — accounts that have leads + at-or-above-goal booked count are "healthy"
+  let healthy = 0, unhealthy = 0;
+  live.forEach(a => {
+    if (a.leads == null && a.booked == null) return; // unscored
+    const bookRate = a.leads > 0 ? (a.booked / a.leads) : 0;
+    const cplOk    = a.cpl != null && a.cplGoal != null && a.cpl <= a.cplGoal * 1.15;
+    const onPace   = a.booked != null && a.bookedGoal != null && a.booked >= a.bookedGoal * 0.6;
+    if (cplOk && onPace) healthy++;
+    else                 unhealthy++;
+  });
+  const totalLeads      = live.reduce((s,a) => s + (a.leads || 0), 0);
+  const totalBooked     = live.reduce((s,a) => s + (a.booked || 0), 0);
+  const totalBudget     = live.reduce((s,a) => s + (a.monthlyBudget || 0), 0);
+  const inactiveCount   = accounts.filter(a => a.status !== 'Active').length;
+  const activeCount     = live.length;
+  const totalCount      = accounts.length;
+  const healthPct       = (healthy + unhealthy) > 0 ? Math.round((healthy / (healthy + unhealthy)) * 100) : 0;
+  const l2bRate         = totalLeads > 0 ? ((totalBooked / totalLeads) * 100).toFixed(1) : null;
+
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const dash = (v) => (v == null || v === '' || (typeof v === 'number' && isNaN(v))) ? '—' : v;
+
+  // Subtitle row
+  setText('cc-active',   dash(activeCount));
+  setText('cc-inactive', dash(inactiveCount));
+  setText('cc-leads',    totalLeads > 0 ? totalLeads.toLocaleString() : '—');
+
   // KPI 1 — Accounts
-  document.getElementById('cc-kpi-active').textContent   = CC_TOTAL_ACTIVE;
-  document.getElementById('cc-kpi-inactive').textContent = CC_TOTAL_INACTIVE;
-  document.getElementById('cc-kpi-total').textContent    = CC_TOTAL_ACTIVE + CC_TOTAL_INACTIVE;
+  setText('cc-kpi-active',   dash(activeCount));
+  setText('cc-kpi-inactive', dash(inactiveCount));
+  setText('cc-kpi-total',    dash(totalCount || null));
+
   // KPI 2 — Account Health
-  document.getElementById('cc-kpi-healthy').textContent   = CC_HEALTHY;
-  document.getElementById('cc-kpi-unhealthy').textContent = CC_UNHEALTHY;
-  const healthPct = Math.round((CC_HEALTHY / (CC_HEALTHY + CC_UNHEALTHY)) * 100);
-  document.getElementById('cc-kpi-health-bar').style.width = healthPct + '%';
-  document.getElementById('cc-kpi-health-pct').textContent = healthPct + '%';
-  document.getElementById('cc-kpi-unscored').textContent   = CC_UNSCORED;
+  setText('cc-kpi-healthy',   dash(healthy));
+  setText('cc-kpi-unhealthy', dash(unhealthy));
+  const healthBar = document.getElementById('cc-kpi-health-bar');
+  if (healthBar) healthBar.style.width = healthPct + '%';
+  setText('cc-kpi-health-pct', (healthy + unhealthy) > 0 ? healthPct + '%' : '—');
+  setText('cc-kpi-unscored',   dash(activeCount - healthy - unhealthy));
+
   // KPI 3 — Lead → Booked
-  const l2b = ((CC_BOOKED_TOTAL / CC_LEADS_BOOKED) * 100).toFixed(1);
-  document.getElementById('cc-kpi-l2b').textContent     = l2b;
-  document.getElementById('cc-kpi-booked').textContent  = CC_BOOKED_TOTAL.toLocaleString();
-  document.getElementById('cc-kpi-leads').textContent   = CC_LEADS_BOOKED.toLocaleString();
+  setText('cc-kpi-l2b',    dash(l2bRate));
+  setText('cc-kpi-booked', dash(totalBooked > 0 ? totalBooked.toLocaleString() : null));
+  setText('cc-kpi-leads',  dash(totalLeads > 0 ? totalLeads.toLocaleString() : null));
+
   // KPI 4 — Monthly Budget
-  document.getElementById('cc-kpi-budget').textContent       = '$' + CC_MONTHLY_BUDGET.toLocaleString();
-  document.getElementById('cc-kpi-budget-count').textContent = CC_TOTAL_ACTIVE;
+  setText('cc-kpi-budget',       totalBudget > 0 ? '$' + totalBudget.toLocaleString() : '—');
+  setText('cc-kpi-budget-count', dash(activeCount));
+
+  // Sidebar manager counts
+  renderManagerSidebar();
+}
+
+// Sidebar shows each manager with a count of their active accounts
+function renderManagerSidebar() {
+  const sbMgrs = document.getElementById('sidebar-managers');
+  if (!sbMgrs) return;
+  // Group active accounts by manager
+  const byMgr = {};
+  accounts.filter(a => a.status === 'Active').forEach(a => {
+    const m = a.manager || 'Unassigned';
+    byMgr[m] = (byMgr[m] || 0) + 1;
+  });
+  // Render each manager from the static roster, with live count
+  sbMgrs.innerHTML = managers.map(m => {
+    const count = byMgr[m.name] || 0;
+    const initials = m.name.slice(0,1).toUpperCase();
+    return `<a href="#" onclick="event.preventDefault();" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-dark-800/50 transition-all">
+      <div class="w-7 h-7 rounded-full avatar text-xs text-white flex-shrink-0" style="background:${m.color};">${initials}</div>
+      <div class="flex-1 text-sm text-dark-200">${m.name}</div>
+      <div class="text-[11px] text-dark-500 font-semibold">${count}</div>
+    </a>`;
+  }).join('');
 }
 
 function fmtMoney(n)   { return '$' + Math.round(n).toLocaleString(); }
@@ -1681,68 +1711,80 @@ function toggleAcct(name, arrowSpan) {
 renderAccountTable();
 
 // === ACCOUNTS TAB ===
-function renderAccounts(sortKey='name') {
-  const list = document.getElementById('accounts-list'); list.innerHTML = '';
-  let arr = [...accounts].map(a => ({...a, score: healthScore(a)}));
-  if (sortKey === 'name')   arr.sort((a,b)=>a.name.localeCompare(b.name));
-  if (sortKey === 'health') arr.sort((a,b)=>a.score-b.score);
-  if (sortKey === 'spend')  arr.sort((a,b)=>b.spent-a.spent);
-  if (sortKey === 'osa')    arr.sort((a,b)=>b.osa-a.osa);
-  if (sortKey === 'booked') arr.sort((a,b)=>b.booked-a.booked);
-  arr.forEach(a => {
-    const b = healthBucket(a.score);
-    const cplTone = a.cpl === 0 ? 'na' : (a.cpl <= a.cplGoal ? 'good' : 'bad');
-    const spendPct = Math.round((a.spent / a.monthlyBudget) * 100);
-    const fiveDay = a.fiveDay > 0 ? `<span class="text-[10px] text-dark-500">5D: $${a.fiveDay.toLocaleString(undefined,{maximumFractionDigits:0})}</span>` : '';
-    const osaTone = a.osa >= 25 ? 'good' : a.osa >= 10 ? 'warn' : a.leads === 0 ? 'na' : 'bad';
-    const chips = ['ctr','cpc','cpm','frequency','survey'].map(k => {
-      const tone = checkThreshold(k, a[k]); const cls = tone === 'good' ? 'th-good' : 'th-bad'; const t = THRESHOLDS[k]; const v = a[k];
-      let display = k==='ctr' ? v.toFixed(2)+'%' : k==='cpc' ? '$'+v.toFixed(2) : k==='cpm' ? '$'+v.toFixed(0) : k==='frequency' ? v.toFixed(2) : v.toFixed(1)+'%';
-      return `<span class="th-cell ${cls}" title="${t.label}">${t.label.slice(0,3)} ${display}</span>`;
-    }).join('');
-    const row = document.createElement('div');
-    row.className = 'account-row card p-4';
-    row.onclick = () => openClient(a.name);
-    row.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-[2fr_0.6fr_0.7fr_0.7fr_0.8fr_1fr_1fr_1.6fr] gap-3 items-center">
-      <div class="flex items-center gap-3 min-w-0"><div class="w-1 h-12 rounded-full ${b.tone==='good'?'bg-green-400':b.tone==='warn'?'bg-yellow-400':'bg-red-400'}"></div><div class="min-w-0"><div class="text-sm font-semibold text-white truncate">${a.name}</div><div class="text-[11px] text-dark-400 mt-0.5"><span>Cycle ${a.cycle}</span><span class="text-dark-600 mx-1">·</span><span>${a.cycleStart.slice(5)} → ${a.cycleEnd.slice(5)}</span><span class="text-dark-600 mx-1">·</span><span class="pill ${a.status==='Active'?'up':'neutral'}" style="padding:1px 6px;font-size:10px;">${a.status}</span></div></div></div>
-      <div class="text-center"><div class="text-sm font-bold text-white">${a.leads}</div><div class="text-[10px] text-dark-500">leads</div></div>
-      <div class="text-center"><div class="text-sm font-bold ${osaTone==='good'?'text-green-400':osaTone==='warn'?'text-yellow-400':osaTone==='bad'?'text-red-400':'text-dark-400'}">${a.osa}%</div><div class="text-[10px] text-dark-500">OSA</div></div>
-      <div class="text-center"><div class="text-sm font-bold text-white">${a.booked} <span class="text-dark-500 font-normal">/ ${a.bookedGoal}</span></div><div class="text-[10px] text-dark-500">est ${a.estBooked}</div></div>
-      <div class="text-right"><div class="text-sm font-bold ${cplTone==='good'?'text-green-400':cplTone==='bad'?'text-red-400':'text-dark-400'}">${a.cpl===0?'—':'$'+a.cpl.toFixed(0)}</div><div class="text-[10px] text-dark-500">goal $${a.cplGoal}</div></div>
-      <div class="text-right"><div class="text-sm font-bold text-white">$${a.spent.toLocaleString(undefined,{maximumFractionDigits:0})}</div><div class="text-[10px] text-dark-500">of $${a.monthlyBudget.toLocaleString()}</div></div>
-      <div><div class="perf-bar"><span style="width:${Math.min(spendPct,100)}%; background:${spendPct>100?'#ef4444':'linear-gradient(90deg,#facc15,#ca8a04)'};"></span></div><div class="flex items-center justify-between mt-1"><span class="text-[10px] text-dark-500">${spendPct}%</span>${fiveDay}</div></div>
-      <div class="flex flex-wrap gap-1 justify-center">${chips}</div>
-    </div>`;
-    list.appendChild(row);
+// renderAccounts() was the renderer for the removed Accounts tab.
+// We keep a no-op stub so any leftover callers don't crash. Overview
+// uses renderAccountTable() instead, and the Quick Jump search filters
+// the live LIVE table directly.
+function renderAccounts() { /* no-op — Accounts tab removed */ }
+
+// Quick Jump search — filters the LIVE table on the Overview tab as you type
+const _quickJumpInput = document.getElementById('account-search');
+if (_quickJumpInput) {
+  _quickJumpInput.addEventListener('input', e => {
+    const q = e.target.value.toLowerCase().trim();
+    document.querySelectorAll('#acct-tbody tr.acct-row').forEach(row => {
+      const matches = !q || row.innerText.toLowerCase().includes(q);
+      row.style.display = matches ? '' : 'none';
+    });
   });
 }
-renderAccounts();
-document.getElementById('sort-accounts').addEventListener('change', e => renderAccounts(e.target.value));
-document.getElementById('account-search').addEventListener('input', e => {
-  const q = e.target.value.toLowerCase();
-  document.querySelectorAll('#accounts-list .account-row').forEach(row => {
-    row.style.display = row.innerText.toLowerCase().includes(q) ? '' : 'none';
-  });
-});
 
-// === LOGBOOK TAB ===
-const lbFunnel = document.getElementById('logbook-funnel');
-logbookStatuses.forEach(s=>{
-  const card = document.createElement('div');
-  card.className = 'kpi-card p-4';
-  card.innerHTML = `<div class="flex items-center gap-2 mb-2"><span class="w-2.5 h-2.5 rounded-sm" style="background:${s.color};"></span><span class="text-[10px] uppercase tracking-wider text-dark-400 font-semibold">${s.label}</span></div><div class="text-2xl font-extrabold text-white">${s.count}</div>`;
-  lbFunnel.appendChild(card);
-});
+// === LOGBOOK TAB STATUS COUNTERS — computed from logbookLeads ===
+function renderLogbookStatusCounters() {
+  const lbFunnel = document.getElementById('logbook-funnel');
+  if (!lbFunnel) return;
+  const STATUS_GROUPS = [
+    { label:'Booked',            match: l => ['Manual Booked','Confirmed','Booked'].includes(l.status), color:'#22c55e' },
+    { label:'Call back',         match: l => l.status === 'Call back',                                    color:'#eab308' },
+    { label:'Not booked',        match: l => l.status === 'Not booked',                                   color:'#3b82f6' },
+    { label:'Cancelled/Invalid', match: l => l.status === 'Cancelled/Invalid',                            color:'#ef4444' },
+    { label:'Not responding',    match: l => ['Not responding','not responding'].includes(l.status),      color:'#a855f7' },
+  ];
+  lbFunnel.innerHTML = STATUS_GROUPS.map(g => {
+    const count = logbookLeads.filter(g.match).length;
+    return `<div class="kpi-card p-4">
+      <div class="flex items-center gap-2 mb-2"><span class="w-2.5 h-2.5 rounded-sm" style="background:${g.color};"></span><span class="text-[10px] uppercase tracking-wider text-dark-400 font-semibold">${g.label}</span></div>
+      <div class="text-2xl font-extrabold ${count > 0 ? 'text-white' : 'text-dark-500'}">${logbookLeads.length === 0 ? '—' : count}</div>
+    </div>`;
+  }).join('');
+}
+renderLogbookStatusCounters();
 
+// === VA LEADERBOARD — computed from logbookLeads ===
+// Bookings counted per VA per month (using the lead's `date` field).
+// Falls back to empty state when no logbook data is loaded.
 function renderVALeaderboard() {
   const sel = document.getElementById('va-month-select');
   const month = sel ? sel.value : '2026-05';
   const list = document.getElementById('va-rows');
   if (!list) return;
-  const ranked = [...vas]
-    .map(v => ({ ...v, monthBooked: (v.monthly && v.monthly[month]) || 0 }))
+
+  if (logbookLeads.length === 0) {
+    list.innerHTML = `<div class="text-dark-500 text-sm py-6 text-center">No logbook data yet — leaderboard will populate once leads are flowing</div>`;
+    return;
+  }
+
+  // Bucket each booked lead by VA + month
+  const monthFromDate = (s) => {
+    if (!s) return null;
+    const m = String(s).match(/(\d+)\/\d+\/(\d{4})/);   // e.g. "5/7/2026"
+    if (m) return `${m[2]}-${m[1].padStart(2,'0')}`;
+    const m2 = String(s).match(/(\d{4})-(\d{2})/);
+    return m2 ? `${m2[1]}-${m2[2]}` : null;
+  };
+  const isBooked = l => ['Manual Booked','Confirmed','Booked'].includes(l.status);
+  const bookedThisMonth = {};
+  logbookLeads.forEach(l => {
+    if (!isBooked(l)) return;
+    if (monthFromDate(l.date) !== month) return;
+    bookedThisMonth[l.va || 'Unassigned'] = (bookedThisMonth[l.va || 'Unassigned'] || 0) + 1;
+  });
+
+  const ranked = vas
+    .map(v => ({ ...v, monthBooked: bookedThisMonth[v.name] || 0 }))
     .sort((a,b) => b.monthBooked - a.monthBooked);
   const max = Math.max(1, ...ranked.map(v => v.monthBooked));
+
   list.innerHTML = ranked.map((v,i) => {
     const pct = (v.monthBooked / max) * 100;
     const isLeader = i === 0 && v.monthBooked > 0;
@@ -1752,7 +1794,7 @@ function renderVALeaderboard() {
       <div class="flex-1 min-w-0">
         <div class="flex items-baseline justify-between gap-2">
           <div class="text-sm font-semibold text-white truncate">${v.name}</div>
-          <div class="text-[11px] text-dark-400">${v.monthBooked} booked</div>
+          <div class="text-[11px] ${v.monthBooked > 0 ? 'text-dark-400' : 'text-dark-600'}">${v.monthBooked} booked</div>
         </div>
         <div class="perf-bar mt-1.5"><span style="width:${pct}%; background:${isLeader?'#facc15':v.color};"></span></div>
       </div>
@@ -1761,19 +1803,45 @@ function renderVALeaderboard() {
 }
 renderVALeaderboard();
 
-const subHeader = document.getElementById('sub-header');
-if (subHeader) {
+// === SUBACCOUNT BOOKINGS — computed from logbookLeads ===
+function renderSubaccountBookings() {
+  const subHeader = document.getElementById('sub-header');
+  const subEl = document.getElementById('subaccount-rows');
+  if (!subHeader || !subEl) return;
+
   subHeader.className = 'grid grid-cols-[2fr_0.6fr_0.6fr_0.6fr_0.6fr_1fr] gap-3 px-3 mb-2 text-[10px] uppercase tracking-wider text-dark-500 font-semibold';
   subHeader.innerHTML = `<div>Subaccount</div><div class="text-center">Calls</div><div class="text-center">Booked</div><div class="text-center">Callback</div><div class="text-center">Cancelled</div><div>Conversion</div>`;
-  const subEl = document.getElementById('subaccount-rows');
-  subaccounts.forEach(s=>{
-    const conv = Math.round((s.booked/s.calls)*100);
-    const row = document.createElement('div');
-    row.className = 'grid grid-cols-[2fr_0.6fr_0.6fr_0.6fr_0.6fr_1fr] gap-3 items-center px-3 py-2 rounded-lg hover:bg-dark-800/50 transition-colors';
-    row.innerHTML = `<div class="text-sm font-medium text-white truncate">${s.name}</div><div class="text-center text-xs text-dark-200">${s.calls}</div><div class="text-center text-xs text-green-400 font-semibold">${s.booked}</div><div class="text-center text-xs text-yellow-400">${s.callbacks}</div><div class="text-center text-xs text-red-400">${s.cancelled}</div><div class="flex items-center gap-2"><div class="perf-bar flex-1"><span style="width:${Math.min(conv*4,100)}%;"></span></div><span class="text-[11px] font-semibold text-white w-8 text-right">${conv}%</span></div>`;
-    subEl.appendChild(row);
+
+  if (logbookLeads.length === 0) {
+    subEl.innerHTML = `<div class="text-dark-500 text-sm py-6 text-center">No logbook data yet — subaccount stats will populate once leads are flowing</div>`;
+    return;
+  }
+
+  // Group leads by sub
+  const bySub = {};
+  logbookLeads.forEach(l => {
+    const k = l.sub || 'Unknown';
+    if (!bySub[k]) bySub[k] = { calls:0, booked:0, callbacks:0, cancelled:0 };
+    bySub[k].calls++;
+    if (['Manual Booked','Confirmed','Booked'].includes(l.status)) bySub[k].booked++;
+    if (l.status === 'Call back') bySub[k].callbacks++;
+    if (['Cancelled/Invalid','Not responding','not responding'].includes(l.status)) bySub[k].cancelled++;
   });
+
+  const rows = Object.entries(bySub).sort((a,b)=>b[1].calls - a[1].calls);
+  subEl.innerHTML = rows.map(([name, s]) => {
+    const conv = s.calls > 0 ? Math.round((s.booked/s.calls)*100) : 0;
+    return `<div class="grid grid-cols-[2fr_0.6fr_0.6fr_0.6fr_0.6fr_1fr] gap-3 items-center px-3 py-2 rounded-lg hover:bg-dark-800/50 transition-colors">
+      <div class="text-sm font-medium text-white truncate">${name}</div>
+      <div class="text-center text-xs text-dark-200">${s.calls}</div>
+      <div class="text-center text-xs text-green-400 font-semibold">${s.booked}</div>
+      <div class="text-center text-xs text-yellow-400">${s.callbacks}</div>
+      <div class="text-center text-xs text-red-400">${s.cancelled}</div>
+      <div class="flex items-center gap-2"><div class="perf-bar flex-1"><span style="width:${Math.min(conv*4,100)}%;"></span></div><span class="text-[11px] font-semibold text-white w-8 text-right">${conv}%</span></div>
+    </div>`;
+  }).join('');
 }
+renderSubaccountBookings();
 
 /* ============================================================
    LOGBOOK TABLE — full survey-submit feed
@@ -1782,46 +1850,8 @@ if (subHeader) {
    GHL automation events as the VA works the lead.
    ============================================================ */
 
-const logbookLeads = [
-  // CALL BACK
-  { va:'Veronica', date:'4/14/2026', sub:'207 Roofers', name:'Alicia Sparks', addr:'86 sun liner drive, Harpswell 04079', dist:'1 hr 9 min (55.3 miles)', status:'Call back', whoConf:'CB midday', c1:'04/14--called lead but routed to vm', c2:'04/23--call lead but routed to vm/sms sent' },
-  { va:'Ena', date:'4/16/2026', sub:'Combat Roofing', name:'Richard Brwn', addr:'9 Kenilworth D, 72714', dist:'Bella Vista | Yes', status:'Call back', whoConf:'Late July', c1:"4/16 Doesn't want to meet right now, follow up late July to revisit estimate" },
-  { va:'Jessica', date:'4/28/2026', sub:'Integrity Roofing & Construction', name:'Daniel Cornell', addr:'1727 292nd PL NE, 98014', dist:'Seattle - Paul Massey', status:'Call back', whoConf:'Follow up after 2 weeks (May 15)', c1:'4/28 Busy. Will try again.', c2:'4/29 No answer. Left vm. Sent txt.', c3:'4/30 ongoing txt', c4:'5/01 Not ready to schedule. Set follow-up in 2 weeks.' },
-  { va:'Jan', date:'3/3/2026', sub:'J Smegal Roofing', name:'John Prystowski', addr:'203 main rd, 01012', dist:'17 min (10.3 miles)', status:'Call back', whoConf:'cb in April', c1:'3/3 texting', c2:'3/4 Will let us know his availability', c3:'3/9 Followed up via text', c4:'3/10 Followed up via text', c5:'3/11 Setting up appointment' },
-  { va:'Jan', date:'3/31/2026', sub:'J Smegal Roofing', name:'GAYLE KITTLE', addr:'461 elm st, 01201', dist:'56 min (40.1 miles)', status:'Call back', whoConf:'cb after May 4', c1:'4/1 Passed info to client', c2:'4/3 Sent follow up text', c3:'4/8 Sent follow up text', c4:'4/10 Sent follow up text' },
-  { va:'Klae', date:'4/22/2026', sub:'J.M.K. Contracting', name:'Rebecca Borland', addr:'225 Washington Ave, 15690', dist:'Westmoreland - Yes', status:'Call back', whoConf:'CB in next few months', c1:"4/22 doesn't want to be called || conversing on sms", c2:'F/U in next few months' },
-  { va:'Jan', date:'3/19/2026', sub:'Klaus Larsen Roofing', name:'Darren Hobbs', addr:'96 Coppermill Road, Wethersfield, 06', dist:'40 min (34.9 miles)', status:'Call back', c1:'Planning for a project to be done next year' },
-  { va:'Rovy', date:'4/28/2026', sub:'Line By Line Roofing', name:'Sharon Dennis', addr:'3021 Ironbound Rd, 23185', dist:'23185 / YES', status:'Call back', whoConf:'CB NEXT MONTH', c1:'5/4 double dial-routed to vm-left vm', c2:'5/5 double dial-no answer-left vm', c3:'5/6 routed to vm - left msg - DND', c4:'5/7 spoke to Sharon had a surgery, wants to do it next month' },
-  { va:'Ed', date:'3/19/2026', sub:'Protecta Roofing', name:'Bernardo Luque', addr:'905 Newport st. Oceanside, CA 92054', dist:'San Diego County', status:'Call back', whoConf:'CB June' },
-  { va:'Ed', date:'3/22/2026', sub:'Protecta Roofing', name:'Robert Pascoal', addr:'4576 Manziya Ct, 91945', dist:'San Diego County', status:'Call back', whoConf:'CB November', c1:'3/23 no answer || left VM || sent SMS' },
-  { va:'Ed', date:'5/6/2026', sub:'Protecta Roofing', name:'Kelly Knight', addr:'1679 Roble Grande Alpine, CA 91901', dist:'San Diego County', status:'Call back', c1:'5/6 no answer || left VM || sent SMS', c2:'5/7 no answer || left VM || sent SMS', c3:'will call us back once ready' },
-  { va:'Klae', date:'5/7/2026', sub:'Roof Scientist Appleton', name:'Bruce Meulemans', addr:'N173 County Road N, 54915-9460', dist:'10 min (5.1 miles) - Yes', status:'Call back', whoConf:'CB IN NEXT FEW MONTHS', c1:'5/7 timeline is 1-2 years, will call next few months' },
-  { va:'Reyn', date:'2/1/2026', sub:'Tall Pine Roofing LLC', name:'Mark Henry Reloj', addr:'29 Mountain Rd, Alfred, ME 04002', dist:'27 min (18.5 miles)', status:'Call back', whoConf:'CB in June', c1:'2/01 Routed to vm | Left vm & SMS', c2:'2/02 Routed to vm | Left vm & SMS', c3:'2/03 dialed lead but routed to VM', c4:'2/04 dialed lead but routed to VM', c5:'2/05 Routed to vm | Left vm & SMS' },
-  { va:'Nikko', date:'3/9/2026', sub:'Tall Pines Roofing', name:'Craig Knobel', addr:'7300 Ludlow Drive, Canandaigua NY', dist:'19 min (11.9 miles)', status:'Call back', whoConf:'CB 3/24 or 3/25 at 1PM', c1:'3/10 dialed, routed to vm sent SMS', c2:'3/11 dialed lead but routed to vm', c3:'3/12 Prequalified - Lead is in Alaska, will touch base once back' },
-  { va:'Jan', date:'4/7/2026', sub:'U.S. Shingle Palm Beach County', name:'Joseph Paci', addr:'9925 arbor view drive s, Boynton Beach', dist:'31 min (16.5 miles)', status:'Call back', sched:'4/10/2026', whoConf:'cb 04/08', c1:'04/07 call back not available, try again tomorrow' },
-  // CANCELLED / INVALID
-  { va:'Veronica', date:'4/28/2026', sub:'207 Roofers', name:'Christine Mecham', addr:'53 Spear Dr, Bowdoinham 04008', dist:'56 min (52.3 miles) - yes', status:'Cancelled/Invalid', c1:'04/29--double dial lead but routed to vm', c2:'04/30--call lead but routed to vm/sms', c3:'05/01--call lead but routed to vm/sms', c4:"05/04--spoke with lead, she's not going to proceed" },
-  { va:'Veronica', date:'5/4/2026', sub:'207 Roofers', name:'Holly Regan', addr:'10 Ruby Mae lane, Scarborough 04074', dist:'23 min (11.3 miles)', status:'Cancelled/Invalid', sched:'5/9/2026', whoConf:'not interested' },
-  { va:'Veronica', date:'5/5/2026', sub:'207 Roofers', name:'Ford Unibody', addr:'209 Ricker rd, New Gloucester 04260', dist:'47 min (45.4 miles) - yes', status:'Cancelled/Invalid', whoConf:'not interested', c1:'05/05--double dial lead, routed to vm, left vm, sms sent' },
-  { va:'Ann', date:'5/2/2026', sub:'22 Home Solutions', name:'Jose Reynaldo Duarte', addr:'3960 tierra venedo dr, El Paso TX 79935', dist:'5 hr 17 min (335 miles)', status:'Cancelled/Invalid', whoConf:'OSA' },
-  { va:'Ed', date:'5/5/2026', sub:'22 Home Solutions', name:'Bob Arviso', addr:'628 South 26th Street, 85204', dist:'32 min (22.1 miles) || Danny', status:'Cancelled/Invalid', sched:'5/6/2026', c1:'no need roof service' },
-  { va:'Ed', date:'5/5/2026', sub:'22 Home Solutions', name:'Nick Loizzo', addr:'117 e June mesa Arizona, 85201', dist:'24 min (16.6 miles) || Danny', status:'Cancelled/Invalid', c1:'duplicate lead' },
-  { va:'Bea', date:'4/25/2026', sub:'AA Home Solutions', name:'Kenneth Quinland', addr:'8482 NW 28th Street, Sunrise FL 33433', dist:'Within SA', status:'Cancelled/Invalid', c1:"4-27 Awaiting client's response", c2:'4-29 Sent follow up, awaiting response', c3:'05-06 Within SA. Double dial', c4:'05-07 No answer. Left voicemail', c5:'05-08 Not interested' },
-  { va:'Maykee', date:'4/25/2026', sub:'Arrow Point Roofing', name:'Rose Pittman', addr:'5616 S Glendora, Spokane 99223', dist:'15 min (7.5 miles)', status:'Cancelled/Invalid', whoConf:'not interested', c1:'04/25 lead will reach back after 5 days', c2:'04/30 Left vm. Sent txt.', c3:'05/01 vm and text', c5:"05/04 not interested. doesn't need a roof inspection" },
-  { va:'Jessica', date:'5/5/2026', sub:'Arrow Point Roofing', name:'Shane Knudsen', addr:'Po Box 1791, Spokane 99224', dist:'19 min (12.4 miles)', status:'Cancelled/Invalid', c1:"Doesn't need a roofer" },
-  { va:'Maykee', date:'5/3/2026', sub:'Berlet Roofing', name:'Brock Camper', addr:'1803 gold Dr e, 80461', dist:'yes - Leadville, CO 80461', status:'Cancelled/Invalid', whoConf:'inquiries / waiting for text', c1:'05/03 call lead, waiting for inquiries', c2:'05/04 follow up text', c3:'05/05 not interested' },
-  // BOOKED / CONFIRMED
-  { va:'Jell', date:'5/7/2026', sub:'Thompson Heating and Cooling', name:'Erick Rada', addr:'2903 Butler ct, 40218', dist:'5 min (1.7 mi) / Jefferson', status:'Manual Booked', sched:'5/14/2026', whoConf:'Jell', c1:'Qualified - Appt confirmed' },
-  { va:'Jell', date:'5/5/2026', sub:'Thompson Heating and Cooling', name:'David Wagner', addr:'8552 Main Street, Campbellsburg KY', dist:'21 min (20.5 mi) / Oldham', status:'Manual Booked', sched:'5/13/2026', whoConf:'Jell', c1:'Qualified - Appt confirmed' },
-  { va:'Jell', date:'5/5/2026', sub:'Thompson Heating and Cooling', name:'Sherry Parrish', addr:'911 5th st, 41008', dist:'39 min (35.2 mi) / Oldham', status:'Confirmed', sched:'5/15/2026', whoConf:'Jell', c1:'Qualified - Appt confirmed' },
-  { va:'Ann', date:'5/3/2026', sub:'Thompson Heating and Cooling', name:'Lonnie McLaughlin', addr:'11622 Victoria Falls Lane Prospect, KY', dist:'Jefferson County', status:'Manual Booked', sched:'5/12/2026', whoConf:'Ann', c1:'05/07 prequal - waiting for schedule' },
-  { va:'Ann', date:'5/3/2026', sub:'Thompson Heating and Cooling', name:'Dale Padgett', addr:'12805 Woodside Drive, 40059', dist:'Yes - Oldham County', status:'Manual Booked', sched:'5/14/2026', whoConf:'Ann', c1:'Lead Qualified - Appt Confirmed' },
-  // NOT BOOKED / UNCONFIRMED / NOT RESPONDING
-  { va:'Jell', date:'5/5/2026', sub:'Thompson Heating and Cooling', name:'Philip Garcia', addr:'7052 wildwood circle, 40291', dist:'6 min (2.1 miles)', status:'Not booked', c1:'05/08 No Answer - Left VM - Sent SMS' },
-  { va:'Jell', date:'5/5/2026', sub:'Thompson Heating and Cooling', name:'Meredith Sommer', addr:'1105 Juniper Springs Dr, 40242', dist:'18 min (7.5 miles)', status:'Unconfirmed', c1:'05/08 No Answer - Left VM - Sent SMS' },
-  { va:'Jell', date:'5/4/2026', sub:'Thompson Heating and Cooling', name:'Gretchen Carolan', addr:'8517 Brookside Drive East, Pewee Valley', dist:'14 min (6.0 mi) / Oldham', status:'not responding', c1:'05/07 No Answer - Left VM - Sent SMS' },
-  { va:'Ann', date:'5/3/2026', sub:'Thompson Heating and Cooling', name:'Saundra M', addr:'7249 Briscoe Vista Way, 40228', dist:'Yes - Jefferson County', status:'not responding', c1:'05/07 No Answer - Left VM - Sent SMS' },
-];
+// Empty by default — populated from logbook spreadsheet pull
+const logbookLeads = [];
 
 function escapeHtml(s) {
   if (!s) return '';
@@ -2173,6 +2203,10 @@ async function pullFromLogbookSheet() {
       logbookLeads.push(lead);
     });
     renderLogbook();
+    if (typeof renderLogbookStatusCounters === 'function') renderLogbookStatusCounters();
+    if (typeof renderVALeaderboard === 'function') renderVALeaderboard();
+    if (typeof renderSubaccountBookings === 'function') renderSubaccountBookings();
+    if (typeof renderCallCenter === 'function') renderCallCenter();
     setLbSyncPill(`Live · ${logbookLeads.length} rows`, 'up', 'bg-green-400');
     setLbSyncSubtitle(`Pulled ${logbookLeads.length} survey submits from the sheet · last sync just now · re-syncs on Refresh Data`);
     lastLogbookSyncStatus = 'ok';
@@ -2379,6 +2413,36 @@ async function pullFromAccountsSheet() {
       if (priors.length) newHistory[name] = priors;
     });
 
+    // Compute derived fields the sheet doesn't have columns for, but we can
+    // calculate from what's there. Anything we genuinely don't know stays null
+    // so the dashboard renders "—" instead of fake numbers.
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const computeDerived = (a) => {
+      // Days remaining — derived from cycleEnd
+      if (a.cycleEnd) {
+        const end = new Date(a.cycleEnd);
+        if (!isNaN(end.getTime())) {
+          a.daysRemaining = Math.max(0, Math.round((end - today) / 86400000));
+        }
+      }
+      // Lead → Booked rate
+      if (typeof a.leads === 'number' && a.leads > 0 && typeof a.booked === 'number') {
+        a.l2bRate = (a.booked / a.leads) * 100;
+      }
+      // Cost per qualified booking
+      if (typeof a.spent === 'number' && typeof a.booked === 'number' && a.booked > 0) {
+        a.cpqb = a.spent / a.booked;
+      }
+      // Ahead-by + on-track derived from estimated bookings vs goal
+      if (typeof a.estBooked === 'number' && typeof a.bookedGoal === 'number' && a.bookedGoal > 0) {
+        a.aheadBy = a.estBooked - a.bookedGoal;
+        a.onTrack = a.aheadBy >= 0;
+      }
+    };
+    newAccounts.forEach(computeDerived);
+    Object.values(newHistory).forEach(arr => arr.forEach(computeDerived));
+
     ACCOUNTS_ROW_BY_NAME = newRowMap;
 
     // Replace in-memory data
@@ -2452,8 +2516,15 @@ async function refreshAllSheetData() {
 
 function updateLiveSyncStamp() {
   const el = document.getElementById('live-sync-stamp');
-  if (!el) return;
-  if (!lastSyncAt) { el.textContent = 'syncing…'; el.className = 'text-[11px] text-dark-500 mt-0.5'; return; }
+  const dotEl = document.getElementById('sidebar-sync-dot');
+  const textEl = document.getElementById('sidebar-sync-text');
+
+  if (!lastSyncAt) {
+    if (el) { el.textContent = 'syncing…'; el.className = 'text-[11px] text-dark-500 mt-0.5'; }
+    if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-yellow-400 pulse';
+    if (textEl) textEl.textContent = 'Sheets · syncing…';
+    return;
+  }
 
   const secs = Math.floor((Date.now() - lastSyncAt) / 1000);
   let timeStr;
@@ -2465,18 +2536,34 @@ function updateLiveSyncStamp() {
   const acctFailed = lastAccountsSyncStatus && String(lastAccountsSyncStatus).startsWith('failed');
   const lbFailed   = lastLogbookSyncStatus  && String(lastLogbookSyncStatus).startsWith('failed');
 
-  if (acctFailed && lbFailed) {
-    el.textContent = `⚠ sync failed — check console (F12)`;
-    el.className   = 'text-[11px] text-red-400 mt-0.5 font-medium';
-  } else if (acctFailed) {
-    el.textContent = `⚠ accounts pull failed · ${timeStr}`;
-    el.className   = 'text-[11px] text-yellow-400 mt-0.5 font-medium';
-  } else if (lbFailed) {
-    el.textContent = `⚠ logbook pull failed · ${timeStr}`;
-    el.className   = 'text-[11px] text-yellow-400 mt-0.5 font-medium';
-  } else {
-    el.textContent = timeStr;
-    el.className   = 'text-[11px] text-dark-500 mt-0.5';
+  if (el) {
+    if (acctFailed && lbFailed) {
+      el.textContent = `⚠ sync failed — check console (F12)`;
+      el.className   = 'text-[11px] text-red-400 mt-0.5 font-medium';
+    } else if (acctFailed) {
+      el.textContent = `⚠ accounts pull failed · ${timeStr}`;
+      el.className   = 'text-[11px] text-yellow-400 mt-0.5 font-medium';
+    } else if (lbFailed) {
+      el.textContent = `⚠ logbook pull failed · ${timeStr}`;
+      el.className   = 'text-[11px] text-yellow-400 mt-0.5 font-medium';
+    } else {
+      el.textContent = timeStr;
+      el.className   = 'text-[11px] text-dark-500 mt-0.5';
+    }
+  }
+
+  // Sidebar mirror
+  if (dotEl && textEl) {
+    if (acctFailed && lbFailed) {
+      dotEl.className = 'w-2 h-2 rounded-full bg-red-500 pulse';
+      textEl.textContent = 'Sheets · sync failed';
+    } else if (acctFailed || lbFailed) {
+      dotEl.className = 'w-2 h-2 rounded-full bg-yellow-400 pulse';
+      textEl.textContent = `Sheets · partial sync · ${timeStr}`;
+    } else {
+      dotEl.className = 'w-2 h-2 rounded-full bg-green-500 pulse';
+      textEl.textContent = `Sheets · live · ${timeStr}`;
+    }
   }
 }
 
@@ -2559,33 +2646,41 @@ function renderClient(a) {
     ${filterPill}
   `;
 
-  // On Track hero
-  const aheadPct = Math.round((a.booked / a.bookedGoal) * 100);
-  const cyclePacePct = Math.min(Math.round((a.cyclePace / a.bookedGoal) * 100), 100);
-  const tone = a.onTrack ? 'good' : 'bad';
-  const heroIcon = a.onTrack
+  // On Track hero — null-safe; "—" anywhere we don't have data
+  const safeN = v => (typeof v === 'number' && !isNaN(v));
+  const fmtUsdSafe = v => safeN(v) ? '$' + Math.round(v).toLocaleString() : '—';
+  const goalKnown = safeN(a.bookedGoal) && a.bookedGoal > 0;
+  const aheadKnown = safeN(a.aheadBy);
+  const onTrackKnown = (typeof a.onTrack === 'boolean');
+  const fillPct = (safeN(a.booked) && goalKnown) ? Math.min(Math.round((a.booked / a.bookedGoal) * 100), 100) : 0;
+  const cycleMarkPct = (aheadKnown && goalKnown) ? Math.min(Math.round(((a.bookedGoal - a.aheadBy) / a.bookedGoal) * 100), 100) : 50;
+  const aheadAmount = aheadKnown ? (a.aheadBy >= 0 ? `${a.aheadBy} AHEAD` : `${Math.abs(a.aheadBy)} BEHIND`) : '—';
+  const aheadColor = aheadKnown ? (a.aheadBy >= 0 ? '#22c55e' : '#ef4444') : '#64748b';
+  const heroTitle = onTrackKnown ? (a.onTrack ? 'On Track' : 'Off Track') : 'No Data';
+  const heroColor = onTrackKnown ? (a.onTrack ? 'text-green-400' : 'text-red-400') : 'text-dark-400';
+  const heroBg    = onTrackKnown ? (a.onTrack ? 'bg-green-500/20' : 'bg-red-500/20') : 'bg-dark-700/40';
+  const heroIcon = onTrackKnown && a.onTrack
     ? `<svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>`
-    : `<svg class="w-7 h-7 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
-  const aheadAmount = a.aheadBy >= 0 ? `${a.aheadBy} AHEAD` : `${Math.abs(a.aheadBy)} BEHIND`;
-  const aheadColor = a.aheadBy >= 0 ? '#22c55e' : '#ef4444';
-  const fillPct = Math.min(Math.round((a.booked / a.bookedGoal) * 100), 100);
-  const cycleMarkPct = Math.min(Math.round(((a.bookedGoal - a.aheadBy) / a.bookedGoal) * 100), 100);
+    : onTrackKnown
+    ? `<svg class="w-7 h-7 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`
+    : `<svg class="w-7 h-7 text-dark-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+  const cycleSubtitle = `Cycle ${a.cycle ?? '—'}${safeN(a.daysRemaining) ? ` · ${a.daysRemaining}d remaining` : ''}`;
 
   document.getElementById('ontrack-card').innerHTML = `
     <div class="grid grid-cols-1 lg:grid-cols-[1.4fr_2fr_1fr] gap-6 items-center">
       <div class="flex items-start gap-3">
-        <div class="w-12 h-12 rounded-xl ${a.onTrack?'bg-green-500/20':'bg-red-500/20'} flex items-center justify-center flex-shrink-0">${heroIcon}</div>
+        <div class="w-12 h-12 rounded-xl ${heroBg} flex items-center justify-center flex-shrink-0">${heroIcon}</div>
         <div>
-          <div class="text-2xl font-extrabold ${a.onTrack?'text-green-400':'text-red-400'} leading-none">${a.onTrack?'On Track':'Off Track'}</div>
-          <div class="text-[12px] text-dark-300 mt-1.5">Cycle ${a.cycle} · ${a.daysRemaining}d remaining</div>
+          <div class="text-2xl font-extrabold ${heroColor} leading-none">${heroTitle}</div>
+          <div class="text-[12px] text-dark-300 mt-1.5">${cycleSubtitle}</div>
         </div>
       </div>
       <div class="text-center">
-        <div class="text-5xl md:text-6xl font-black text-white leading-none tracking-tight">${a.booked}<span class="text-dark-400 font-bold mx-2">/</span><span class="text-dark-300">${a.bookedGoal}</span></div>
+        <div class="text-5xl md:text-6xl font-black text-white leading-none tracking-tight">${safeN(a.booked) ? a.booked : '—'}<span class="text-dark-400 font-bold mx-2">/</span><span class="text-dark-300">${goalKnown ? a.bookedGoal : '—'}</span></div>
         <div class="text-[10px] uppercase tracking-[0.2em] text-dark-400 font-semibold mt-2">Booked Appointments</div>
       </div>
       <div class="text-right">
-        <div class="text-3xl font-extrabold text-white leading-none">$${a.spent.toLocaleString(undefined,{maximumFractionDigits:0})} <span class="text-dark-400 text-base font-bold">/ $${a.monthlyBudget.toLocaleString()}</span></div>
+        <div class="text-3xl font-extrabold text-white leading-none">${fmtUsdSafe(a.spent)} <span class="text-dark-400 text-base font-bold">/ ${fmtUsdSafe(a.monthlyBudget)}</span></div>
         <div class="text-[10px] uppercase tracking-[0.2em] text-dark-400 font-semibold mt-2">Spend</div>
       </div>
     </div>
@@ -2593,19 +2688,17 @@ function renderClient(a) {
     <div class="mt-6 mb-4">
       <div class="pace-bar relative">
         <div class="pace-fill" style="width:${fillPct}%"></div>
-        <div class="pace-marker" style="left:${cycleMarkPct}%; top:-22px;">
-          <span class="pace-pill" style="background:${aheadColor};color:#fff;">${aheadAmount}</span>
-        </div>
-        <div class="pace-marker" style="left:80%; top:18px;"><span class="text-[10px] text-dark-400">80% · ${a.estBooked} BOOKINGS</span></div>
+        ${aheadKnown ? `<div class="pace-marker" style="left:${cycleMarkPct}%; top:-22px;"><span class="pace-pill" style="background:${aheadColor};color:#fff;">${aheadAmount}</span></div>` : ''}
+        ${safeN(a.estBooked) && goalKnown ? `<div class="pace-marker" style="left:80%; top:18px;"><span class="text-[10px] text-dark-400">80% · ${a.estBooked} BOOKINGS</span></div>` : ''}
         <div class="pace-marker" style="left:100%; top:18px;"><span class="text-base">🏁</span></div>
       </div>
       <div class="flex items-center justify-between mt-1 text-[10px] text-dark-500"><span>0</span></div>
     </div>
 
     <div class="grid grid-cols-3 gap-4 pt-4 border-t border-dark-600/30 mt-4">
-      <div class="text-center"><div class="text-[10px] uppercase tracking-wider text-dark-500 font-semibold">Cycle Pace</div><div class="text-2xl font-extrabold text-green-400 mt-1">~${a.cyclePace}</div></div>
-      <div class="text-center"><div class="text-[10px] uppercase tracking-wider text-dark-500 font-semibold">5-Day Pace</div><div class="text-2xl font-extrabold text-green-400 mt-1">~${a.fiveDayPace}</div></div>
-      <div class="text-center"><div class="text-[10px] uppercase tracking-wider text-dark-500 font-semibold">Ahead By</div><div class="text-2xl font-extrabold ${a.aheadBy>=0?'text-green-400':'text-red-400'} mt-1">${Math.abs(a.aheadBy)}</div></div>
+      <div class="text-center"><div class="text-[10px] uppercase tracking-wider text-dark-500 font-semibold">Cycle Pace</div><div class="text-2xl font-extrabold ${safeN(a.cyclePace) ? 'text-green-400' : 'text-dark-500'} mt-1">${safeN(a.cyclePace) ? '~'+a.cyclePace : '—'}</div></div>
+      <div class="text-center"><div class="text-[10px] uppercase tracking-wider text-dark-500 font-semibold">5-Day Pace</div><div class="text-2xl font-extrabold ${safeN(a.fiveDayPace) ? 'text-green-400' : 'text-dark-500'} mt-1">${safeN(a.fiveDayPace) ? '~'+a.fiveDayPace : '—'}</div></div>
+      <div class="text-center"><div class="text-[10px] uppercase tracking-wider text-dark-500 font-semibold">Ahead By</div><div class="text-2xl font-extrabold ${aheadKnown ? (a.aheadBy>=0?'text-green-400':'text-red-400') : 'text-dark-500'} mt-1">${aheadKnown ? Math.abs(a.aheadBy) : '—'}</div></div>
     </div>
   `;
 
@@ -2619,21 +2712,29 @@ function renderClient(a) {
   const osaTone = a.osa >= 25 ? 'good' : a.osa >= 10 ? 'warn' : a.leads === 0 ? 'na' : 'bad';
   const colorFor = t => t==='good'?'text-green-400':t==='bad'?'text-red-400':t==='warn'?'text-yellow-400':'text-dark-400';
 
+  // safeN was defined for the hero above
+  const fmtPct = v => safeN(v) ? v.toFixed(2) + '%' : '—';
+  const fmtPct1 = v => safeN(v) ? v.toFixed(1) + '%' : '—';
+  const fmtUsd2 = v => safeN(v) ? '$' + v.toFixed(2) : '—';
+  const fmtFreq = v => safeN(v) ? v.toFixed(2) : '—';
+  const fmtPlain = v => safeN(v) ? v.toLocaleString() : '—';
+  const l2bSub = (safeN(a.booked) && safeN(a.leads)) ? `${a.booked} booked / ${a.leads} leads` : '';
+
   document.getElementById('client-kpis').innerHTML = `
     <div class="kpi-card p-4 col-span-2 md:col-span-1">
       <div class="flex items-center justify-between mb-2"><span class="text-[10px] uppercase tracking-wider text-dark-400 font-semibold flex items-center gap-1.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> NOTES</span><button class="text-dark-400 hover:text-white">+</button></div>
       <div class="text-[11px] text-dark-500">No notes yet — click + to add one.</div>
     </div>
-    ${kpiCard('LEADS', a.leads, '', 'text-white')}
-    ${kpiCard('OSA', a.osa+'%', '', colorFor(osaTone))}
-    ${kpiCard('L2B RATE', a.l2bRate.toFixed(1)+'%', `${a.booked} booked / ${a.leads} leads`, colorFor(l2bTone))}
-    ${kpiCard('SPEED TO LEAD', '—', '9am–8pm EST · outbound', 'text-dark-300')}
-    ${kpiCard('CPQB', '$'+a.cpqb.toFixed(2), '', 'text-white')}
-    ${kpiCard('CTR', a.ctr.toFixed(2)+'%', 'target 0.9-3%', colorFor(ctrTone))}
-    ${kpiCard('CPC', '$'+a.cpc.toFixed(2), 'target $1-3', colorFor(cpcTone))}
-    ${kpiCard('CPM', '$'+a.cpm.toFixed(2), 'target $20-50', colorFor(cpmTone))}
-    ${kpiCard('FREQ', a.frequency.toFixed(2), 'target ≤2.50', colorFor(freqTone))}
-    ${kpiCard('SURVEY', a.survey.toFixed(1)+'%', 'target ≥2.00%', colorFor(surveyTone))}
+    ${kpiCard('LEADS', fmtPlain(a.leads), '', safeN(a.leads) ? 'text-white' : 'text-dark-500')}
+    ${kpiCard('OSA', safeN(a.osa) ? a.osa+'%' : '—', '', safeN(a.osa) ? colorFor(osaTone) : 'text-dark-500')}
+    ${kpiCard('L2B RATE', fmtPct1(a.l2bRate), l2bSub, safeN(a.l2bRate) ? colorFor(l2bTone) : 'text-dark-500')}
+    ${kpiCard('SPEED TO LEAD', '—', 'requires GHL timestamps', 'text-dark-500')}
+    ${kpiCard('CPQB', fmtUsd2(a.cpqb), '', safeN(a.cpqb) ? 'text-white' : 'text-dark-500')}
+    ${kpiCard('CTR', fmtPct(a.ctr), 'target 0.9-3%', safeN(a.ctr) ? colorFor(ctrTone) : 'text-dark-500')}
+    ${kpiCard('CPC', fmtUsd2(a.cpc), 'target $1-3', safeN(a.cpc) ? colorFor(cpcTone) : 'text-dark-500')}
+    ${kpiCard('CPM', fmtUsd2(a.cpm), 'target $20-50', safeN(a.cpm) ? colorFor(cpmTone) : 'text-dark-500')}
+    ${kpiCard('FREQ', fmtFreq(a.frequency), 'target ≤2.50', safeN(a.frequency) ? colorFor(freqTone) : 'text-dark-500')}
+    ${kpiCard('SURVEY', fmtPct1(a.survey), 'target ≥2.00%', safeN(a.survey) ? colorFor(surveyTone) : 'text-dark-500')}
   `;
 
   // Lead Breakdown — uses real per-client lead data when present, otherwise empty
@@ -2684,6 +2785,22 @@ function renderClient(a) {
   // Cycle Comparison — uses the real previous cycle from accountHistory if present
   const priorCycles = accountHistory[a.name] || [];
   const prev = priorCycles[0]; // most recent prior cycle
+
+  // Dynamic header: "Cycle 12 vs Cycle 13" / "Apr 13, 2026 → May 11, 2026"
+  const compSel = document.getElementById('cycle-comp-selectors');
+  const compSub = document.getElementById('cycle-comp-subtitle');
+  if (compSel) {
+    compSel.innerHTML = prev
+      ? `<span class="text-dark-300">Cycle ${prev.cycle}</span><span class="text-[11px]">vs</span><span class="text-white font-semibold">Cycle ${a.cycle}</span>`
+      : `<span class="text-dark-500 text-[11px]">no prior cycle to compare</span>`;
+  }
+  if (compSub) {
+    compSub.textContent = prev
+      ? `Comparing Cycle ${prev.cycle} (${formatDate(prev.cycleStart)} → ${formatDate(prev.cycleEnd)}) vs Cycle ${a.cycle} (${formatDate(a.cycleStart)} → ${formatDate(a.cycleEnd)})`
+      : '';
+  }
+  const perfLabel = document.getElementById('campaign-perf-cycle-label');
+  if (perfLabel) perfLabel.textContent = a.cycle ? `Cycle ${a.cycle} · ${formatDate(a.cycleStart)} → ${formatDate(a.cycleEnd)}` : '';
   const safeNum = (x) => (typeof x === 'number' && !isNaN(x)) ? x : null;
   const pctDelta = (cur, prev) => (prev && prev !== 0) ? ((cur - prev) / prev) * 100 : null;
   const comp = prev ? [
@@ -2892,50 +3009,6 @@ function formatDate(s) {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const [y,m,d] = s.split('-');
   return `${months[+m - 1]} ${+d}, ${y}`;
-}
-
-function generateLeadsFor(a) {
-  // Synthetic for non-Thompson accounts
-  return Array.from({length: Math.min(a.leads, 12)}, (_, i) => ({
-    date: i === 0 ? 'May 7, 2026' : null, dayCount:1,
-    name: `Lead ${i+1}`, address:'—', distance:'—',
-    status: ['Manual Booked','Cancelled/Invalid','Not booked','Confirmed','not responding'][i%5],
-    va: ['Jell','Ann','Mark','Reyn'][i%4], speed:'—', note:'—',
-  }));
-}
-
-function generateDailyFor(a) {
-  return Array.from({length:10}, (_, i) => {
-    const day = `5/${10-i}`;
-    return { date: day, spend: a.dailyBudget * (0.7 + Math.random()*0.5),
-      ctr: a.ctr * (0.8 + Math.random()*0.4), cpc: a.cpc * (0.85 + Math.random()*0.3),
-      survey: a.survey * (0.5 + Math.random()), cpm: a.cpm * (0.9 + Math.random()*0.2),
-      freq: a.frequency * (0.95 + Math.random()*0.1),
-      cpl: Math.random() > 0.2 ? a.cpl * (0.5 + Math.random()*0.8) : null,
-      cpr: Math.random() > 0.5 ? a.cpl * (0.8 + Math.random()*0.5) : null,
-      cpqb: Math.random() > 0.5 ? a.cpqb * (0.6 + Math.random()*0.5) : null,
-      leads: Math.round(Math.random()*4), booked: Math.round(Math.random()*2),
-    };
-  });
-}
-
-function generateAdsFor(a) {
-  return { campaigns: [{
-    name: `${a.name} B2C Leads`, status:'ACTIVE',
-    activeAds:'12/24', spend: Math.round(a.spent), leads: a.leads, schedules: a.booked,
-    adsets: [{
-      name:'Geo + Age Targeting', activeAds:'12/24',
-      spend: Math.round(a.spent), leads: a.leads, schedules: a.booked,
-      ads: [
-        { name:'AD-001', active:true,
-          layer1:{ booked:'—', cpqb:'—', scheduled:Math.round(a.booked/2), cpr:a.cpqb, leads:Math.round(a.leads/2), cpl:a.cpl, spend:Math.round(a.spent/2) },
-          layer2:{ cpc:a.cpc, ctr:a.ctr, freq:a.frequency, cpm:a.cpm, clicks:Math.round(a.leads*5), survey:a.survey, medS2L:'—' } },
-        { name:'AD-002', active:true,
-          layer1:{ booked:'—', cpqb:'—', scheduled:Math.max(1,Math.round(a.booked/3)), cpr:a.cpqb*1.2, leads:Math.max(1,Math.round(a.leads/3)), cpl:a.cpl*0.9, spend:Math.round(a.spent/3) },
-          layer2:{ cpc:a.cpc*1.1, ctr:a.ctr*0.9, freq:a.frequency, cpm:a.cpm, clicks:Math.round(a.leads*3), survey:a.survey, medS2L:'—' } },
-      ]
-    }]
-  }] };
 }
 
 /* ============================================================
@@ -3162,74 +3235,111 @@ openClient = function(name) {
    CALL CENTER VIEW
    ============================================================ */
 
-// Extend VA data with call-center-specific metrics
-const vaCallCenter = vas.map(v => ({
-  ...v,
-  connected: Math.round(v.calls * (0.55 + Math.random() * 0.25)),
-  avgS2L:    Math.round(4 + Math.random() * 18),  // minutes
-  avgAttempts: +(1.4 + Math.random() * 1.6).toFixed(1),
-}));
-
-// Subaccount follow-up speed
-const subaccountS2L = subaccounts.map(s => ({
-  ...s,
-  avgS2L: Math.round(3 + Math.random() * 32), // minutes
-})).sort((a,b)=>b.avgS2L - a.avgS2L);
+/* ============================================================
+   CALL CENTER VIEW — all metrics computed from logbookLeads
+   When the logbook is empty, every cell renders blank or shows
+   "no logbook data yet" so it's clear what's not connected.
+   ============================================================ */
 
 function renderCallCenter() {
-  // VA perf table
-  const tbody = document.getElementById('va-perf-table');
-  tbody.innerHTML = vaCallCenter
-    .map(v => ({...v, l2b: Math.round((v.booked / v.calls) * 100)}))
-    .sort((a,b)=>b.l2b - a.l2b)
-    .map(v => {
-      const s2lTone = v.avgS2L <= 10 ? 'text-green-400' : v.avgS2L <= 20 ? 'text-yellow-400' : 'text-red-400';
-      const l2bTone = v.l2b >= 25 ? 'text-green-400' : v.l2b >= 15 ? 'text-yellow-400' : 'text-red-400';
-      return `<tr class="heat-row">
-        <td class="py-2.5 px-2"><div class="flex items-center gap-2"><div class="w-7 h-7 rounded-lg avatar text-[10px] text-white" style="background:${v.color};">${v.name.slice(0,2).toUpperCase()}</div><span class="text-white font-medium">${v.name}</span></div></td>
-        <td class="py-2.5 px-2 text-right text-white">${v.calls}</td>
-        <td class="py-2.5 px-2 text-right text-dark-200">${v.connected} <span class="text-dark-500 text-[10px]">(${Math.round(v.connected/v.calls*100)}%)</span></td>
-        <td class="py-2.5 px-2 text-right text-green-400 font-semibold">${v.booked}</td>
-        <td class="py-2.5 px-2 text-right ${l2bTone} font-bold">${v.l2b}%</td>
-        <td class="py-2.5 px-2 text-right ${s2lTone}">${v.avgS2L}m</td>
-        <td class="py-2.5 px-2 text-right text-dark-200">${v.avgAttempts}</td>
-      </tr>`;
-    }).join('');
+  const leads = (typeof logbookLeads !== 'undefined' && Array.isArray(logbookLeads)) ? logbookLeads : [];
 
-  // Subaccount S2L
-  const slowest = Math.max(...subaccountS2L.map(s=>s.avgS2L));
-  document.getElementById('subaccount-s2l-rows').innerHTML = subaccountS2L.map(s => {
-    const tone = s.avgS2L <= 10 ? 'good' : s.avgS2L <= 20 ? 'warn' : 'bad';
-    const color = tone === 'good' ? '#4ade80' : tone === 'warn' ? '#facc15' : '#f87171';
-    const pct = (s.avgS2L / slowest) * 100;
-    return `<div class="grid grid-cols-[2fr_1fr_2fr_0.6fr] gap-3 items-center px-3 py-2 rounded-lg hover:bg-dark-800/50 transition-colors">
-      <div class="text-sm font-medium text-white truncate">${s.name}</div>
-      <div class="text-xs text-dark-400">${s.calls} calls · ${s.booked} booked</div>
-      <div class="perf-bar"><span style="width:${pct}%; background:${color};"></span></div>
-      <div class="text-right text-sm font-bold" style="color:${color};">${s.avgS2L}m</div>
-    </div>`;
+  // ── Empty state: nothing connected yet
+  if (leads.length === 0) {
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setText('cc-median-s2l', '—');         setText('cc-median-s2l-sub', 'no logbook data yet');
+    setText('cc-l2b-rate', '—');           setText('cc-l2b-sub', 'no logbook data yet');
+    setText('cc-connect-rate', '—');       setText('cc-connect-sub', 'no logbook data yet');
+    setText('cc-avg-attempts', '—');       setText('cc-avg-attempts-sub', 'no logbook data yet');
+
+    const outcomes = document.getElementById('lead-outcomes-list');
+    if (outcomes) outcomes.innerHTML = `<div class="text-dark-500 text-sm py-4 text-center">No leads in logbook yet</div>`;
+
+    const vaTbl = document.getElementById('va-perf-table');
+    if (vaTbl) vaTbl.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-dark-500 text-sm"><div class="mb-2">No VA performance data yet</div><div class="text-xs">Connect the logbook to see per-VA stats</div></td></tr>`;
+
+    const subRows = document.getElementById('subaccount-s2l-rows');
+    if (subRows) subRows.innerHTML = `<div class="text-dark-500 text-sm py-8 text-center">No subaccount data yet</div>`;
+    return;
+  }
+
+  // ── Real computation from logbook
+  const isBooked    = l => ['Manual Booked','Confirmed','Booked'].includes(l.status);
+  const isLost      = l => ['Cancelled/Invalid','Not responding','not responding'].includes(l.status);
+  const isConnected = l => l.status && !['Not responding','not responding',''].includes(l.status);
+  const attemptCount = l => ['c1','c2','c3','c4','c5'].filter(k => l[k] && String(l[k]).trim()).length;
+
+  const total = leads.length;
+  const bookings = leads.filter(isBooked).length;
+  const connected = leads.filter(isConnected).length;
+  const bookedAttempts = leads.filter(isBooked).map(attemptCount);
+  const avgAttempts = bookedAttempts.length ? (bookedAttempts.reduce((a,b)=>a+b,0) / bookedAttempts.length) : 0;
+
+  // KPI cards
+  document.getElementById('cc-median-s2l').textContent = '—';
+  document.getElementById('cc-median-s2l-sub').textContent = 'requires GHL timestamps';
+  document.getElementById('cc-l2b-rate').textContent = total > 0 ? ((bookings/total)*100).toFixed(1) + '%' : '—';
+  document.getElementById('cc-l2b-sub').textContent = `${bookings} of ${total} leads`;
+  document.getElementById('cc-connect-rate').textContent = total > 0 ? Math.round((connected/total)*100) + '%' : '—';
+  document.getElementById('cc-connect-sub').textContent = `${total - connected} no answer/VM`;
+  document.getElementById('cc-avg-attempts').textContent = bookings > 0 ? avgAttempts.toFixed(1) : '—';
+  document.getElementById('cc-avg-attempts-sub').textContent = `across ${bookings} booked`;
+
+  // Lead Outcomes
+  const bookedFirst  = leads.filter(l => isBooked(l) && attemptCount(l) <= 1).length;
+  const booked23     = leads.filter(l => isBooked(l) && attemptCount(l) >= 2 && attemptCount(l) <= 3).length;
+  const booked4plus  = leads.filter(l => isBooked(l) && attemptCount(l) >= 4).length;
+  const stillWorking = leads.filter(l => !isBooked(l) && !isLost(l)).length;
+  const lost         = leads.filter(isLost).length;
+  document.getElementById('lead-outcomes-list').innerHTML = `
+    <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-green-400"></div><span class="text-xs text-dark-300 flex-1">Booked first try</span><span class="text-sm font-bold text-white">${bookedFirst}</span></div>
+    <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-yellow-400"></div><span class="text-xs text-dark-300 flex-1">Booked 2-3 attempts</span><span class="text-sm font-bold text-white">${booked23}</span></div>
+    <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-orange-400"></div><span class="text-xs text-dark-300 flex-1">Booked 4+ attempts</span><span class="text-sm font-bold text-white">${booked4plus}</span></div>
+    <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-blue-400"></div><span class="text-xs text-dark-300 flex-1">Still working</span><span class="text-sm font-bold text-white">${stillWorking}</span></div>
+    <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-red-400"></div><span class="text-xs text-dark-300 flex-1">Lost (no answer)</span><span class="text-sm font-bold text-white">${lost}</span></div>
+  `;
+
+  // VA Performance table — group leads by VA
+  const byVa = {};
+  leads.forEach(l => { const v = l.va || 'Unassigned'; (byVa[v] = byVa[v] || []).push(l); });
+  const vaRows = Object.entries(byVa).map(([name, list]) => {
+    const calls = list.length;
+    const conn = list.filter(isConnected).length;
+    const booked = list.filter(isBooked).length;
+    const l2b = calls > 0 ? Math.round((booked/calls)*100) : 0;
+    const info = (typeof vas !== 'undefined' ? vas.find(x => x.name === name) : null) || { color:'#64748b' };
+    return { name, info, calls, conn, booked, l2b };
+  }).sort((a,b) => b.l2b - a.l2b);
+
+  document.getElementById('va-perf-table').innerHTML = vaRows.map(v => {
+    const l2bTone = v.l2b >= 25 ? 'text-green-400' : v.l2b >= 15 ? 'text-yellow-400' : 'text-red-400';
+    const connPct = v.calls > 0 ? Math.round(v.conn/v.calls*100) : 0;
+    return `<tr class="heat-row">
+      <td class="py-2.5 px-2"><div class="flex items-center gap-2"><div class="w-7 h-7 rounded-lg avatar text-[10px] text-white" style="background:${v.info.color};">${v.name.slice(0,2).toUpperCase()}</div><span class="text-white font-medium">${v.name}</span></div></td>
+      <td class="py-2.5 px-2 text-right text-white">${v.calls}</td>
+      <td class="py-2.5 px-2 text-right text-dark-200">${v.conn} <span class="text-dark-500 text-[10px]">(${connPct}%)</span></td>
+      <td class="py-2.5 px-2 text-right text-green-400 font-semibold">${v.booked}</td>
+      <td class="py-2.5 px-2 text-right ${l2bTone} font-bold">${v.l2b}%</td>
+      <td class="py-2.5 px-2 text-right text-dark-500">—</td>
+      <td class="py-2.5 px-2 text-right text-dark-500">—</td>
+    </tr>`;
   }).join('');
 
-  // S2L distribution chart
-  if (window.s2lChartInstance) window.s2lChartInstance.destroy();
-  const ctx = document.getElementById('s2lChart').getContext('2d');
-  const grad = ctx.createLinearGradient(0,0,0,200);
-  grad.addColorStop(0,'rgba(96,165,250,0.5)'); grad.addColorStop(1,'rgba(96,165,250,0.05)');
-  window.s2lChartInstance = new Chart(ctx, {
-    type:'bar',
-    data:{
-      labels:['<2m','2-5m','5-10m','10-15m','15-30m','30-60m','>1h'],
-      datasets:[{
-        label:'Leads', data:[18, 47, 62, 38, 24, 12, 7],
-        backgroundColor:grad, borderColor:'#3b82f6', borderWidth:1.5, borderRadius:6, hoverBackgroundColor:'#3b82f6',
-      }],
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0b1424', borderColor:'rgba(96,165,250,0.4)', borderWidth:1, titleColor:'#fff', bodyColor:'#cbd5e1', padding:10, cornerRadius:8 } },
-      scales:{ x:{grid:{display:false}, ticks:{color:'#64748b'}}, y:{grid:{color:'rgba(51,65,85,0.3)'}, ticks:{color:'#64748b'}} }
-    }
-  });
+  // Subaccount table — group by sub field
+  const bySub = {};
+  leads.forEach(l => { const s = l.sub || 'Unknown'; (bySub[s] = bySub[s] || []).push(l); });
+  const subRows = Object.entries(bySub).map(([name, list]) => ({
+    name, calls: list.length, booked: list.filter(isBooked).length,
+  })).sort((a,b)=>b.calls - a.calls);
+  const maxCalls = Math.max(1, ...subRows.map(s => s.calls));
+  document.getElementById('subaccount-s2l-rows').innerHTML = subRows.map(s => `
+    <div class="grid grid-cols-[2fr_1fr_2fr_0.6fr] gap-3 items-center px-3 py-2 rounded-lg hover:bg-dark-800/50 transition-colors">
+      <div class="text-sm font-medium text-white truncate">${s.name}</div>
+      <div class="text-xs text-dark-400">${s.calls} leads · ${s.booked} booked</div>
+      <div class="perf-bar"><span style="width:${(s.calls/maxCalls)*100}%; background:#facc15;"></span></div>
+      <div class="text-right text-sm font-bold text-dark-500">—</div>
+    </div>
+  `).join('');
 }
 
 // Hook into setTab so Call Center renders on first view
