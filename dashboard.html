@@ -171,10 +171,16 @@
   .lb-row-cancelled  { background:rgba(239,68,68,0.05); }
   .lb-row-booked     { background:rgba(34,197,94,0.05); }
   .lb-row-notbooked  { background:rgba(59,130,246,0.05); }
+  .lb-row-purple     { background:rgba(168,85,247,0.05); }
+  .lb-row-cyan       { background:rgba(6,182,212,0.05); }
+  .lb-row-pink       { background:rgba(244,63,94,0.04); }
   .lb-row-callback   td:first-child { box-shadow: inset 3px 0 0 #eab308; }
   .lb-row-cancelled  td:first-child { box-shadow: inset 3px 0 0 #ef4444; }
   .lb-row-booked     td:first-child { box-shadow: inset 3px 0 0 #22c55e; }
   .lb-row-notbooked  td:first-child { box-shadow: inset 3px 0 0 #3b82f6; }
+  .lb-row-purple     td:first-child { box-shadow: inset 3px 0 0 #a855f7; }
+  .lb-row-cyan       td:first-child { box-shadow: inset 3px 0 0 #06b6d4; }
+  .lb-row-pink       td:first-child { box-shadow: inset 3px 0 0 #f43f5e; }
   .va-chip { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; color:#fff; white-space:nowrap; }
   .status-pill { display:inline-block; padding:2px 9px; border-radius:999px; font-size:10px; font-weight:700; white-space:nowrap; }
   .truncate-cell { max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -601,7 +607,7 @@
           <select id="lb-va-filter" onchange="renderLogbook()" class="bg-dark-800 border border-dark-600 rounded-lg text-xs text-dark-200 px-3 py-2"><option value="">All VAs</option></select>
           <select id="lb-status-filter" onchange="renderLogbook()" class="bg-dark-800 border border-dark-600 rounded-lg text-xs text-dark-200 px-3 py-2">
             <option value="">All statuses</option>
-            <option>Call back</option><option>Cancelled/Invalid</option><option>Manual Booked</option><option>Confirmed</option><option>Not booked</option><option>Unconfirmed</option><option>not responding</option><option>OSA</option><option>DUP</option>
+            <option>Not booked</option><option>Not responding</option><option>Manual Booked</option><option>Confirmed</option><option>Unconfirmed</option><option>Satellite Quote</option><option>Reschedule Needed</option><option>Cancelled/Invalid</option><option>Call back</option><option>Client handles</option>
           </select>
           <select id="lb-sub-filter" onchange="renderLogbook()" class="bg-dark-800 border border-dark-600 rounded-lg text-xs text-dark-200 px-3 py-2"><option value="">All subaccounts</option></select>
           <!-- Date stepper -->
@@ -1394,22 +1400,23 @@ const thompsonAds = {
 
 // Logbook + VAs (carried from prior view)
 const vas = [
-  { name:'Veronica', color:'#ef4444', calls:38, booked:9,  monthly:{ '2026-05':9,  '2026-04':12, '2026-03':8,  '2026-02':6  } },
-  { name:'Jessica',  color:'#a855f7', calls:42, booked:11, monthly:{ '2026-05':11, '2026-04':14, '2026-03':10, '2026-02':9  } },
-  { name:'Mark',     color:'#3b82f6', calls:51, booked:7,  monthly:{ '2026-05':7,  '2026-04':9,  '2026-03':6,  '2026-02':5  } },
-  { name:'Reyn',     color:'#10b981', calls:29, booked:8,  monthly:{ '2026-05':8,  '2026-04':6,  '2026-03':7,  '2026-02':4  } },
-  { name:'Jan',      color:'#f59e0b', calls:33, booked:10, monthly:{ '2026-05':10, '2026-04':11, '2026-03':9,  '2026-02':7  } },
-  { name:'Ena',      color:'#06b6d4', calls:24, booked:6,  monthly:{ '2026-05':6,  '2026-04':8,  '2026-03':5,  '2026-02':4  } },
-  { name:'Ed',       color:'#84cc16', calls:31, booked:5,  monthly:{ '2026-05':5,  '2026-04':7,  '2026-03':6,  '2026-02':3  } },
   { name:'Ann',      color:'#ec4899', calls:18, booked:3,  monthly:{ '2026-05':3,  '2026-04':5,  '2026-03':4,  '2026-02':2  } },
-  { name:'Maykee',   color:'#f43f5e', calls:22, booked:6,  monthly:{ '2026-05':6,  '2026-04':4,  '2026-03':5,  '2026-02':3  } },
-  { name:'Klae',     color:'#8b5cf6', calls:14, booked:4,  monthly:{ '2026-05':4,  '2026-04':3,  '2026-03':4,  '2026-02':2  } },
-  { name:'Rovy',     color:'#14b8a6', calls:11, booked:3,  monthly:{ '2026-05':3,  '2026-04':4,  '2026-03':2,  '2026-02':3  } },
-  { name:'Myra',     color:'#eab308', calls:19, booked:5,  monthly:{ '2026-05':5,  '2026-04':6,  '2026-03':5,  '2026-02':4  } },
-  { name:'Nikko',    color:'#0ea5e9', calls:16, booked:4,  monthly:{ '2026-05':4,  '2026-04':5,  '2026-03':3,  '2026-02':4  } },
   { name:'Bea',      color:'#f97316', calls:21, booked:5,  monthly:{ '2026-05':5,  '2026-04':7,  '2026-03':4,  '2026-02':5  } },
+  { name:'Ed',       color:'#84cc16', calls:31, booked:5,  monthly:{ '2026-05':5,  '2026-04':7,  '2026-03':6,  '2026-02':3  } },
+  { name:'Ena',      color:'#06b6d4', calls:24, booked:6,  monthly:{ '2026-05':6,  '2026-04':8,  '2026-03':5,  '2026-02':4  } },
+  { name:'Jan',      color:'#f59e0b', calls:33, booked:10, monthly:{ '2026-05':10, '2026-04':11, '2026-03':9,  '2026-02':7  } },
   { name:'Jell',     color:'#a16207', calls:28, booked:12, monthly:{ '2026-05':12, '2026-04':15, '2026-03':11, '2026-02':9  } },
+  { name:'Jessica',  color:'#a855f7', calls:42, booked:11, monthly:{ '2026-05':11, '2026-04':14, '2026-03':10, '2026-02':9  } },
+  { name:'Klae',     color:'#475569', calls:14, booked:4,  monthly:{ '2026-05':4,  '2026-04':3,  '2026-03':4,  '2026-02':2  } },
   { name:'Lou',      color:'#22d3ee', calls:13, booked:4,  monthly:{ '2026-05':4,  '2026-04':5,  '2026-03':3,  '2026-02':3  } },
+  { name:'Mark',     color:'#3b82f6', calls:51, booked:7,  monthly:{ '2026-05':7,  '2026-04':9,  '2026-03':6,  '2026-02':5  } },
+  { name:'Maykee',   color:'#7c2d12', calls:22, booked:6,  monthly:{ '2026-05':6,  '2026-04':4,  '2026-03':5,  '2026-02':3  } },
+  { name:'Myra',     color:'#eab308', calls:19, booked:5,  monthly:{ '2026-05':5,  '2026-04':6,  '2026-03':5,  '2026-02':4  } },
+  { name:'Pamela',   color:'#1d4ed8', calls:20, booked:6,  monthly:{ '2026-05':6,  '2026-04':5,  '2026-03':7,  '2026-02':4  } },
+  { name:'Reyn',     color:'#0f172a', calls:29, booked:8,  monthly:{ '2026-05':8,  '2026-04':6,  '2026-03':7,  '2026-02':4  } },
+  { name:'Rincee',   color:'#15803d', calls:15, booked:4,  monthly:{ '2026-05':4,  '2026-04':5,  '2026-03':3,  '2026-02':3  } },
+  { name:'Rovy',     color:'#14b8a6', calls:11, booked:3,  monthly:{ '2026-05':3,  '2026-04':4,  '2026-03':2,  '2026-02':3  } },
+  { name:'Veronica', color:'#ef4444', calls:38, booked:9,  monthly:{ '2026-05':9,  '2026-04':12, '2026-03':8,  '2026-02':6  } },
 ];
 const logbookStatuses = [
   { label:'Booked', count:81, color:'#22c55e' },
@@ -1960,24 +1967,27 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function lbRowClass(s) {
-  if (s === 'Call back') return 'lb-row-callback';
-  if (s === 'Cancelled/Invalid' || s === 'not responding') return 'lb-row-cancelled';
-  if (s === 'Manual Booked' || s === 'Confirmed' || s === 'Booked') return 'lb-row-booked';
-  if (s === 'Not booked') return 'lb-row-notbooked';
+  if (s === 'Call back')                                return 'lb-row-callback';
+  if (s === 'Cancelled/Invalid' || s === 'Not responding') return 'lb-row-cancelled';
+  if (s === 'Manual Booked' || s === 'Confirmed')       return 'lb-row-booked';
+  if (s === 'Not booked')                               return 'lb-row-notbooked';
+  if (s === 'Reschedule Needed')                        return 'lb-row-purple';
+  if (s === 'Satellite Quote')                          return 'lb-row-cyan';
+  if (s === 'Client handles' || s === 'Unconfirmed')    return 'lb-row-pink';
   return '';
 }
 function lbStatusStyle(s) {
   return ({
-    'Call back':         'background:rgba(234,179,8,0.18);color:#facc15;',
-    'Cancelled/Invalid': 'background:rgba(239,68,68,0.18);color:#f87171;',
-    'not responding':    'background:rgba(239,68,68,0.18);color:#f87171;',
-    'Manual Booked':     'background:rgba(34,197,94,0.18);color:#4ade80;',
-    'Confirmed':         'background:rgba(34,197,94,0.18);color:#4ade80;',
-    'Booked':            'background:rgba(34,197,94,0.18);color:#4ade80;',
-    'Not booked':        'background:rgba(59,130,246,0.18);color:#60a5fa;',
-    'Unconfirmed':       'background:rgba(255,255,255,0.10);color:#fff;',
-    'OSA':               'background:rgba(168,85,247,0.18);color:#c084fc;',
-    'DUP':               'background:rgba(168,85,247,0.18);color:#c084fc;',
+    'Not booked':         'background:rgba(59,130,246,0.18);color:#60a5fa;',
+    'Not responding':     'background:rgba(220,38,38,0.20);color:#f87171;',
+    'Manual Booked':      'background:rgba(34,197,94,0.22);color:#4ade80;',
+    'Confirmed':          'background:rgba(22,163,74,0.20);color:#86efac;',
+    'Unconfirmed':        'background:rgba(251,207,232,0.18);color:#fbcfe8;',
+    'Satellite Quote':    'background:rgba(6,182,212,0.18);color:#22d3ee;',
+    'Reschedule Needed':  'background:rgba(168,85,247,0.20);color:#c084fc;',
+    'Cancelled/Invalid':  'background:rgba(239,68,68,0.18);color:#f87171;',
+    'Call back':          'background:rgba(234,179,8,0.18);color:#facc15;',
+    'Client handles':     'background:rgba(244,63,94,0.18);color:#fb7185;',
   })[s] || 'background:rgba(100,116,139,0.18);color:#cbd5e1;';
 }
 
@@ -2052,7 +2062,7 @@ function renderLogbook() {
   document.getElementById('lb-count').textContent = filtered.length;
   document.getElementById('lb-total').textContent = logbookLeads.length;
 
-  const STATUS_OPTIONS = ['Call back','Cancelled/Invalid','Manual Booked','Confirmed','Not booked','Unconfirmed','not responding','OSA','DUP'];
+  const STATUS_OPTIONS = ['Not booked','Not responding','Manual Booked','Confirmed','Unconfirmed','Satellite Quote','Reschedule Needed','Cancelled/Invalid','Call back','Client handles'];
 
   const noteCell = (l, field, idx) => {
     const v = l[field] || '';
@@ -2174,7 +2184,8 @@ function flashSaved(el) {
 
 const LOGBOOK_SHEET_ID    = '14Uxkf5Ppy9VEkX3PVk76U9C-WSqMfHE-HaR-02ACBxo';
 const LOGBOOK_TAB_NAME    = 'TEST LOGBOOK';
-const SHEET_ACCESS_TOKEN  = ''; // OAuth token for write — paste here when ready
+
+const LOGBOOK_WRITE_URL   = 'https://script.google.com/macros/s/AKfycbyyutRjog-sGP-M1O-K_EBYReRFAyPII2S5v6lhzErKwupKHTo-XauAT1hkB4csz-7Dlw/exec';
 
 // Field name → spreadsheet column letter (must match your sheet)
 const SHEET_COL_MAP = {
@@ -2197,20 +2208,23 @@ function setLbSyncSubtitle(text) {
 }
 
 async function pushToLogbookSheet(rowIdx, field, value) {
-  if (!LOGBOOK_SHEET_ID || !SHEET_ACCESS_TOKEN) {
-    console.log(`[stub · no token] sheet write · row=${rowIdx + 2} field=${field} (${SHEET_COL_MAP[field]}) value="${value}"`);
+  if (!LOGBOOK_WRITE_URL) {
+    console.log(`[stub · no Apps Script URL] would write · row=${rowIdx + 2} field=${field} (${SHEET_COL_MAP[field]}) value="${value}"`);
     return;
   }
-  const col = SHEET_COL_MAP[field];
-  const range = `${LOGBOOK_TAB_NAME}!${col}${rowIdx + 2}`; // +2 = header row offset
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${LOGBOOK_SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`;
   try {
-    await fetch(url, {
-      method: 'PUT',
-      headers: { 'Authorization':`Bearer ${SHEET_ACCESS_TOKEN}`, 'Content-Type':'application/json' },
-      body: JSON.stringify({ values: [[value]] }),
+    // Apps Script web apps accept text/plain to skip CORS preflight
+    const r = await fetch(LOGBOOK_WRITE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ rowIdx, field, value }),
     });
-  } catch (e) { console.error('Sheet write failed:', e); }
+    const result = await r.json();
+    if (!result.ok) console.error('Sheet write returned error:', result.error);
+    else console.log(`✓ wrote ${result.cell} = "${value}"`);
+  } catch (e) {
+    console.error('Sheet write failed:', e);
+  }
 }
 
 // Lightweight CSV parser — handles quoted fields, embedded commas, escaped quotes
