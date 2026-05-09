@@ -752,6 +752,11 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             </button>
           </div>
+          <div id="client-meta-row" class="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-dark-400 mt-1.5">
+            <span>Cycle <span id="client-cycle-num" class="text-white font-semibold">—</span></span>
+            <span class="text-dark-600">·</span>
+            <span>Ad Account <code id="client-ad-account" class="text-brand-400 font-mono">—</code></span>
+          </div>
           <div id="client-pills" class="flex flex-wrap items-center gap-2 mt-3"></div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -1141,9 +1146,10 @@
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1 flex-wrap">
                 <span class="text-sm font-semibold text-white">Meta Ad Account ID</span>
-                <span class="th-cell th-good" id="meta-id-display">—</span>
+                <span class="th-cell th-bad" id="meta-id-display">Not set</span>
               </div>
-              <p class="text-[11px] text-dark-400 mb-2">The Facebook ad account this client runs on. Used for every Meta API call.</p>
+              <p class="text-[11px] text-dark-400 mb-1">The Facebook ad account this client runs on. Used for every Meta API call.</p>
+              <div id="meta-id-line" class="text-[11px] text-brand-400 font-mono mb-2"></div>
               <input id="meta-id-input" type="text" placeholder="e.g. 730609608741332" class="modal-input">
             </div>
           </div>
@@ -2541,17 +2547,26 @@ function renderClient(a) {
   window.currentClient = a;
   document.getElementById('client-name').textContent = a.name;
   document.getElementById('client-cycle-range').textContent = `${formatDate(a.cycleStart)} → ${formatDate(a.cycleEnd)}`;
+  // Verifiable bindings — show the cycle # and Ad Account ID coming from the sheet
+  const cycleNumEl = document.getElementById('client-cycle-num');
+  const adAcctEl   = document.getElementById('client-ad-account');
+  if (cycleNumEl) cycleNumEl.textContent = a.cycle ?? '—';
+  if (adAcctEl)   adAcctEl.textContent   = a.adAccountId || 'not set';
 
   // Pills
   const pills = document.getElementById('client-pills');
+  const isLive       = !!a.adAccountId; // LIVE when ad account ID is wired
+  const livePill     = isLive
+    ? `<span class="pill up" style="padding:4px 10px;font-size:11px;"><span class="w-1.5 h-1.5 rounded-full bg-green-400 pulse"></span> LIVE</span>`
+    : `<span class="pill warn" style="padding:4px 10px;font-size:11px;"><span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span> NOT CONNECTED</span>`;
   const ghlPill      = (a.ghlLocationId && a.ghlApiKey) ? `<span class="pill up" style="padding:4px 10px;font-size:11px;">✓ GHL</span>` : `<span class="pill warn" style="padding:4px 10px;font-size:11px;">⚠ NO GHL</span>`;
   const sheetPill    = a.leadSheetUrl ? `<span class="pill up" style="padding:4px 10px;font-size:11px;">✓ LEAD SHEET</span>` : `<span class="pill warn" style="padding:4px 10px;font-size:11px;">⚠ NO LEAD SHEET</span>`;
   const filterPill   = a.campaignFilter ? `<span class="pill neutral" style="padding:4px 10px;font-size:11px;">FILTER: ${a.campaignFilter}</span>` : '';
   pills.innerHTML = `
-    <span class="pill up" style="padding:4px 10px;font-size:11px;">${a.hp} <span class="text-[9px] uppercase opacity-80 ml-0.5">HP</span></span>
-    <span class="pill up" style="padding:4px 10px;font-size:11px;">${a.ftg} <span class="text-[9px] uppercase opacity-80 ml-0.5">FTG</span></span>
-    <span class="pill up" style="padding:4px 10px;font-size:11px;"><span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> LIVE</span>
-    <span class="pill neutral" style="padding:4px 10px;font-size:11px;"><span class="w-1.5 h-1.5 rounded-full bg-dark-400"></span> NO FLAG · ${a.manager}</span>
+    ${a.hp != null ? `<span class="pill up" style="padding:4px 10px;font-size:11px;">${a.hp} <span class="text-[9px] uppercase opacity-80 ml-0.5">HP</span></span>` : ''}
+    ${a.ftg != null ? `<span class="pill up" style="padding:4px 10px;font-size:11px;">${a.ftg} <span class="text-[9px] uppercase opacity-80 ml-0.5">FTG</span></span>` : ''}
+    ${livePill}
+    ${a.manager ? `<span class="pill neutral" style="padding:4px 10px;font-size:11px;"><span class="w-1.5 h-1.5 rounded-full bg-dark-400"></span> NO FLAG · ${a.manager}</span>` : ''}
     ${ghlPill}
     ${sheetPill}
     ${filterPill}
@@ -3272,10 +3287,12 @@ function saveEditCycle() {
 
 function prepareIntegrations(a) {
   document.getElementById('integrations-subtitle').textContent = a.name;
-  // Meta Ad ID — always set (it's required to identify the account)
+  // Meta Ad ID — green "Connected" pill when present (matches the others)
   document.getElementById('meta-id-input').value = a.adAccountId || '';
-  document.getElementById('meta-id-display').textContent = a.adAccountId || 'Not set';
-  document.getElementById('meta-id-display').className = 'th-cell ' + (a.adAccountId ? 'th-good' : 'th-bad');
+  setStatusBadge('meta-id-display', a.adAccountId, 'Connected', 'Not set');
+  // Show the actual ID under the field name in mono font (verifiable at a glance)
+  const idLine = document.getElementById('meta-id-line');
+  if (idLine) idLine.textContent = a.adAccountId ? `ID: ${a.adAccountId}` : '';
   // Backup token
   document.getElementById('meta-token-input').value = a.metaTokenBackup || '';
   setStatusBadge('meta-token-status', a.metaTokenBackup, 'Set', 'Not set');
