@@ -2100,28 +2100,38 @@ function parseCSV(text) {
 async function readSheetRows(sheetId, tabName) {
   if (!sheetId) throw new Error('missing sheetId');
 
+  // 10-second per-fetch timeout so a hung Apps Script can't block forever
+  const fetchWithTimeout = (url, ms = 10000) => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { signal: ctrl.signal, redirect: 'follow' }).finally(() => clearTimeout(t));
+  };
+
   // Strategy 1: Apps Script JSON
   try {
     const appsScriptUrl = `${LOGBOOK_WRITE_URL}?action=read&sheetId=${encodeURIComponent(sheetId)}&tabName=${encodeURIComponent(tabName || '')}`;
-    const r = await fetch(appsScriptUrl);
+    const r = await fetchWithTimeout(appsScriptUrl);
     if (r.ok) {
       const data = await r.json();
       if (data && data.ok && Array.isArray(data.rows) && data.rows.length > 0) {
         console.log(`✓ Read via Apps Script: ${data.rows.length} rows from "${data.sheetName}"`);
         return { rows: data.rows, source: `Apps Script (${data.sheetName})` };
       }
+      if (data && data.error) console.log('Apps Script returned error:', data.error);
+    } else {
+      console.log('Apps Script returned HTTP', r.status);
     }
   } catch (e) {
-    console.log('Apps Script read failed, falling back to gviz:', e.message);
+    console.log('Apps Script read failed (' + e.message + '), falling back to gviz');
   }
 
   // Strategy 2: gviz CSV (requires "Anyone with the link" sharing)
   const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName || '')}`;
-  const r2 = await fetch(gvizUrl);
+  const r2 = await fetchWithTimeout(gvizUrl);
   if (!r2.ok) throw new Error('HTTP ' + r2.status + ' from Google');
   const csv = await r2.text();
   if (/<html/i.test(csv.slice(0, 200))) {
-    throw new Error('sheet not public AND Apps Script read endpoint not deployed — redeploy Apps Script or share sheet "Anyone with the link"');
+    throw new Error('Apps Script not reachable (set deployment to "Anyone") AND sheet not shared "Anyone with the link"');
   }
   const rows = parseCSV(csv);
   console.log(`✓ Read via gviz CSV: ${rows.length} rows`);
