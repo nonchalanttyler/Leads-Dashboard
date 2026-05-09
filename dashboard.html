@@ -2259,39 +2259,17 @@ function colIdxToLetter(i) {
 
 async function pullFromAccountsSheet() {
   if (!ACCOUNTS_SHEET_ID) return;
-  // Try the tab-name URL first; fall back to gid=0 (first tab) if that fails.
-  // Means it works regardless of whether the tab is called "All Accounts" or something else.
-  const baseUrl   = `https://docs.google.com/spreadsheets/d/${ACCOUNTS_SHEET_ID}/gviz/tq?tqx=out:csv`;
-  const byName    = `${baseUrl}&sheet=${encodeURIComponent(ACCOUNTS_TAB_NAME)}`;
-  const byGid     = `${baseUrl}&gid=0`;
-  // 15-second timeout per fetch so a hung network can't leave us stuck forever
-  const fetchWithTimeout = (url, ms = 15000) => {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), ms);
-    return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(t));
-  };
-  let csv = null, sourceUsed = '';
+  // Same simple gviz CSV read as the logbook — sheet must be shared "Anyone with the link"
+  const url = `https://docs.google.com/spreadsheets/d/${ACCOUNTS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(ACCOUNTS_TAB_NAME)}`;
   try {
-    // Attempt 1: by tab name
-    try {
-      const r = await fetchWithTimeout(byName);
-      if (r.ok) {
-        const text = await r.text();
-        if (!/<html/i.test(text.slice(0, 200))) { csv = text; sourceUsed = `?sheet=${ACCOUNTS_TAB_NAME}`; }
-      }
-    } catch (_) {}
-    // Attempt 2: by gid=0 (first tab)
-    if (!csv) {
-      const r = await fetchWithTimeout(byGid);
-      if (!r.ok) throw new Error('HTTP ' + r.status + ' from Google');
-      const text = await r.text();
-      if (/<html/i.test(text.slice(0, 200))) throw new Error('sheet not public — needs Share → Anyone with the link');
-      csv = text; sourceUsed = '?gid=0 (first tab)';
-    }
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const csv = await r.text();
+    if (/<html/i.test(csv.slice(0, 200))) throw new Error('sheet not public');
     const rows = parseCSV(csv);
-    if (rows.length < 2) throw new Error('sheet returned no rows');
+    if (rows.length < 2) throw new Error('no rows');
 
-    // Map column index → dashboard field via normalized header matching
+    // Map column index → dashboard field via header normalization
     const headers = rows[0];
     const colIdxToField = {};
     const fieldToColLetter = {};
@@ -2309,185 +2287,96 @@ async function pullFromAccountsSheet() {
     });
     ACCOUNTS_COL_BY_FIELD = fieldToColLetter;
 
-    // Walk every data row, build cycle-rows. Skip:
-    //  - rows without a parseable Cycle number (KPI threshold, manager labels, account header rows)
-    //  - rows without an account name
-    const dataRows = rows.slice(1);
+    // Build cycle-rows from data, skipping rows without a parseable Cycle number
     const cycleRows = [];
-    let skippedNoCycle = 0, skippedNoName = 0, blankRows = 0;
-    const skippedSamples = [];
-    dataRows.forEach((row, dataRowIdx) => {
-      // Detect fully-blank rows (all empty cells)
-      const hasAnyContent = row.some(c => c && c.trim());
-      if (!hasAnyContent) { blankRows++; return; }
-
+    rows.slice(1).forEach((row, dataRowIdx) => {
+      if (!row.some(c => c && String(c).trim())) return; // skip blank rows
       const obj = {};
       Object.entries(colIdxToField).forEach(([i, field]) => {
-        let v = row[i] !== undefined ? row[i].trim() : '';
+        let v = row[i] !== undefined ? String(row[i]).trim() : '';
         if (NUMERIC_FIELDS.has(field) && v !== '') v = coerceNumber(v);
         obj[field] = v;
       });
-
-      // Normalize the account name: trim, collapse internal whitespace.
-      // This prevents "J.M.K. Contracting" and "J.M.K.  Contracting" from
-      // being treated as different accounts.
       if (obj.name) obj.name = String(obj.name).trim().replace(/\s+/g, ' ');
-
       const cycleNum = parseCycleNumber(obj.cycle);
-      if (cycleNum == null) {
-        skippedNoCycle++;
-        if (skippedSamples.length < 5) skippedSamples.push({ sheetRow: dataRowIdx + 2, name: obj.name || '(blank)', cycle: obj.cycle || '(blank)', reason: 'no parseable cycle' });
-        return;
-      }
-      if (!obj.name) {
-        skippedNoName++;
-        if (skippedSamples.length < 5) skippedSamples.push({ sheetRow: dataRowIdx + 2, cycle: obj.cycle, reason: 'no name' });
-        return;
-      }
-      obj.cycle  = cycleNum;
+      if (cycleNum == null || !obj.name) return;
+      obj.cycle = cycleNum;
       obj.status = 'Active';
       cycleRows.push({ sheetRowIdx: dataRowIdx, fields: obj });
     });
 
-    // Group cycle rows by account name. For each account: highest cycle = current,
-    // remaining cycles (newest → oldest) = previous-cycle history.
+    // Group by account: highest cycle = current, rest = history
     const byAccount = {};
     cycleRows.forEach(cr => {
       const k = cr.fields.name;
       if (!byAccount[k]) byAccount[k] = [];
       byAccount[k].push(cr);
     });
-
     const newAccounts = [];
     const newHistory  = {};
     const newRowMap   = {};
     Object.entries(byAccount).forEach(([name, list]) => {
       list.sort((a,b) => b.fields.cycle - a.fields.cycle);
-      const current = list[0];
-      newAccounts.push(current.fields);
-      newRowMap[name] = current.sheetRowIdx;
+      newAccounts.push(list[0].fields);
+      newRowMap[name] = list[0].sheetRowIdx;
       const priors = list.slice(1).map(p => p.fields);
       if (priors.length) newHistory[name] = priors;
     });
 
-    // Compute derived fields the sheet doesn't have columns for, but we can
-    // calculate from what's there. Anything we genuinely don't know stays null
-    // so the dashboard renders "—" instead of fake numbers.
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const computeDerived = (a) => {
-      // Days remaining — derived from cycleEnd
-      if (a.cycleEnd) {
-        const end = new Date(a.cycleEnd);
-        if (!isNaN(end.getTime())) {
-          a.daysRemaining = Math.max(0, Math.round((end - today) / 86400000));
-        }
-      }
-      // Lead → Booked rate
-      if (typeof a.leads === 'number' && a.leads > 0 && typeof a.booked === 'number') {
-        a.l2bRate = (a.booked / a.leads) * 100;
-      }
-      // Cost per qualified booking
-      if (typeof a.spent === 'number' && typeof a.booked === 'number' && a.booked > 0) {
-        a.cpqb = a.spent / a.booked;
-      }
-      // Ahead-by + on-track derived from estimated bookings vs goal
-      if (typeof a.estBooked === 'number' && typeof a.bookedGoal === 'number' && a.bookedGoal > 0) {
-        a.aheadBy = a.estBooked - a.bookedGoal;
-        a.onTrack = a.aheadBy >= 0;
-      }
-    };
-    newAccounts.forEach(computeDerived);
-    Object.values(newHistory).forEach(arr => arr.forEach(computeDerived));
-
-    ACCOUNTS_ROW_BY_NAME = newRowMap;
-
-    // Replace in-memory data
     accounts.length = 0;
-    newAccounts.forEach(a => accounts.push(a));
-
-    // Replace previous-cycle history (keep the const reference, swap contents)
+    accounts.push(...newAccounts);
+    Object.keys(ACCOUNTS_ROW_BY_NAME).forEach(k => delete ACCOUNTS_ROW_BY_NAME[k]);
+    Object.assign(ACCOUNTS_ROW_BY_NAME, newRowMap);
     Object.keys(accountHistory).forEach(k => delete accountHistory[k]);
     Object.assign(accountHistory, newHistory);
 
-    // Re-render anything driven by accounts
+    // Re-render
     if (typeof renderAccountTable === 'function')   renderAccountTable();
     if (typeof renderCommandCenter === 'function')  renderCommandCenter();
     if (typeof renderAccounts === 'function')       renderAccounts();
 
-    // ─── Diagnostic logging ──────────────────────────────────────
-    console.log(`%c━━━ ACCOUNTS SHEET PULL ━━━`, 'color:#facc15;font-weight:bold');
-    console.log(`  Source: ${sourceUsed}`);
-    console.log(`  Total rows in sheet: ${rows.length} (1 header + ${dataRows.length} data)`);
-    console.log(`  ✓ Cycle rows accepted: ${cycleRows.length}`);
-    console.log(`  ⨯ Skipped (no parseable cycle): ${skippedNoCycle}  ← KPI row, manager labels, account-header rows`);
-    console.log(`  ⨯ Skipped (no name): ${skippedNoName}`);
-    console.log(`  ⨯ Skipped (fully blank): ${blankRows}`);
-    if (skippedSamples.length) console.log(`  Sample skipped rows:`, skippedSamples);
-    console.log(`%c→ Final: ${accounts.length} live accounts · ${Object.keys(newHistory).length} have prior cycles`, 'color:#22c55e;font-weight:bold');
-    console.log(`  Accounts found: ${accounts.map(a => `${a.name} (cycle ${a.cycle}, ${(newHistory[a.name]||[]).length+1} total cycles)`).join(' | ')}`);
-    console.log(`  Mapped columns: ${Object.keys(fieldToColLetter).join(', ')}`);
-    if (unmappedHeaders.length) console.log(`  Unmapped headers (tell Claude to add aliases): ${unmappedHeaders.filter(Boolean).join(' | ')}`);
+    console.log(`✓ Accounts pull: ${accounts.length} accounts loaded`);
+    showAccountsBanner('ok', accounts.length);
     lastAccountsSyncStatus = 'ok';
-    showAccountsBanner('ok', accounts.length, sourceUsed, unmappedHeaders);
   } catch (e) {
-    console.warn('%c━━━ ACCOUNTS SHEET PULL FAILED ━━━', 'color:#ef4444;font-weight:bold');
-    console.warn('  Reason:', e.message);
-    console.warn('  Sheet ID:', ACCOUNTS_SHEET_ID);
-    console.warn('  Tab name:', ACCOUNTS_TAB_NAME);
-    console.warn('  Most likely causes: (1) sheet not shared "Anyone with link" (2) tab name mismatch (3) network/CORS');
+    console.warn('✗ Accounts pull failed:', e.message);
+    showAccountsBanner('failed', 0, e.message);
     lastAccountsSyncStatus = `failed: ${e.message}`;
-    showAccountsBanner('failed', 0, '', [], e.message);
   }
 }
 
-// Visible status banner above the All Accounts table — tells the user exactly
-// what the sheet read is doing, with actionable links/instructions when it fails.
-function showAccountsBanner(state, count, source, unmapped, errorMsg) {
+// Visible banner above All Accounts table — shows actual error so we can debug without console
+function showAccountsBanner(state, count, errorMsg) {
   const el = document.getElementById('accounts-status-banner');
   if (!el) return;
-  const testUrl = `https://docs.google.com/spreadsheets/d/${ACCOUNTS_SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
   const sheetUrl = `https://docs.google.com/spreadsheets/d/${ACCOUNTS_SHEET_ID}/edit`;
+  const testUrl  = `https://docs.google.com/spreadsheets/d/${ACCOUNTS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(ACCOUNTS_TAB_NAME)}`;
 
+  el.classList.remove('hidden');
   if (state === 'ok' && count > 0) {
-    el.className = 'mb-4 p-3 rounded-xl border text-xs';
-    el.style.cssText = 'background:rgba(34,197,94,0.06); border-color:rgba(34,197,94,0.25); color:#86efac;';
-    el.innerHTML = `<div class="flex items-center gap-2"><span class="text-green-400">✓</span><span class="font-semibold">Connected to spreadsheet</span><span class="text-dark-400">·</span><span>${count} account${count===1?'':'s'} loaded${source ? ' from ' + source : ''}</span>${unmapped && unmapped.length ? `<span class="text-yellow-400 ml-2">⚠ ${unmapped.length} unmapped column${unmapped.length===1?'':'s'}: ${unmapped.filter(Boolean).join(', ')}</span>` : ''}</div>`;
-    setTimeout(() => { el.classList.add('hidden'); }, 5000);
+    el.style.cssText = 'background:rgba(34,197,94,0.06); border:1px solid rgba(34,197,94,0.25); color:#86efac; padding:12px; border-radius:12px;';
+    el.innerHTML = `<div class="text-xs"><span class="text-green-400">✓</span> <strong>Connected</strong> · ${count} account${count===1?'':'s'} loaded from spreadsheet</div>`;
+    setTimeout(() => el.classList.add('hidden'), 5000);
     return;
   }
-
-  if (state === 'ok' && count === 0) {
-    el.className = 'mb-4 p-4 rounded-xl border text-sm';
-    el.style.cssText = 'background:rgba(234,179,8,0.06); border-color:rgba(234,179,8,0.3); color:#fef3c7;';
-    el.innerHTML = `
-      <div class="font-semibold mb-1">⚠ Spreadsheet read but no accounts found</div>
-      <div class="text-xs text-dark-300 mb-2">The sheet was read successfully but no rows matched the expected structure (each row must have an account name + a "Cycle N" value).</div>
-      <div class="text-xs"><a href="${sheetUrl}" target="_blank" class="text-brand-400 hover:underline">Open spreadsheet</a> · check that rows have a Cycle column filled in.</div>
-    `;
-    return;
-  }
-
-  // failed
-  el.className = 'mb-4 p-4 rounded-xl border text-sm';
-  el.style.cssText = 'background:rgba(239,68,68,0.06); border-color:rgba(239,68,68,0.35); color:#fecaca;';
-  const isPermissionIssue = /not public|HTTP 4(0[13]|04)|permission|sign in|login/i.test(errorMsg || '');
-  const fixHint = isPermissionIssue
-    ? `<div class="text-xs leading-relaxed">
-         <strong>Most likely fix:</strong> the spreadsheet isn't shared publicly.<br>
-         <ol class="list-decimal ml-5 mt-1 space-y-0.5 text-dark-200">
-           <li><a href="${sheetUrl}" target="_blank" class="text-brand-400 hover:underline">Open the spreadsheet</a></li>
-           <li>Click <strong>Share</strong> (top right)</li>
-           <li>Under "General access", select <strong>"Anyone with the link"</strong></li>
-           <li>Set role to <strong>"Editor"</strong> (writes need this)</li>
-           <li>Click Done, then refresh this dashboard</li>
-         </ol>
-       </div>`
-    : `<div class="text-xs">Try opening the read endpoint directly: <a href="${testUrl}" target="_blank" class="text-brand-400 hover:underline break-all">${testUrl}</a></div>`;
+  // Failed or 0 results
+  el.style.cssText = 'background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.35); color:#fecaca; padding:16px; border-radius:12px;';
+  const isPermission = /not public|HTTP 4|permission|sign in|login/i.test(errorMsg || '');
   el.innerHTML = `
-    <div class="font-semibold mb-2 text-red-300">✗ Could not read spreadsheet</div>
-    <div class="text-xs text-dark-200 mb-3"><strong>Error:</strong> ${errorMsg || 'unknown'}</div>
-    ${fixHint}
+    <div class="font-semibold text-red-300 mb-2">✗ Could not read accounts spreadsheet</div>
+    <div class="text-xs text-dark-200 mb-3"><strong>Error:</strong> ${errorMsg || 'no rows returned'}</div>
+    ${isPermission ? `
+      <div class="text-xs leading-relaxed">
+        <strong class="text-red-200">Fix:</strong> the spreadsheet isn't shared publicly.
+        <ol class="list-decimal ml-5 mt-1 space-y-0.5 text-dark-200">
+          <li><a href="${sheetUrl}" target="_blank" class="text-brand-400 hover:underline">Open the spreadsheet</a></li>
+          <li>Click <strong>Share</strong> (top right)</li>
+          <li>"General access" → <strong>"Anyone with the link"</strong></li>
+          <li>Role → <strong>"Editor"</strong></li>
+          <li>Done, then hard-refresh this dashboard</li>
+        </ol>
+      </div>
+    ` : `<div class="text-xs">Test the read URL directly: <a href="${testUrl}" target="_blank" class="text-brand-400 hover:underline break-all">${testUrl}</a></div>`}
   `;
 }
 
