@@ -2309,20 +2309,22 @@ pullFromLogbookSheet();
    Add aliases below if your sheet uses a header we don't catch.
    ============================================================ */
 
-// Header text (lowercased, trimmed) → dashboard field
+// Header text → dashboard field. Headers normalized first (lowercased,
+// parens stripped, $ % # removed) so "Amount Spent ($)" matches "amount spent".
 const ACCOUNTS_HEADER_MAP = {
   // identity
   'account': 'name', 'account name': 'name', 'client': 'name', 'name': 'name',
   'status': 'status',
   'manager': 'manager', 'pod': 'manager',
+  'campaign filter': 'campaignFilter',
   'ad account': 'adAccountId', 'ad account id': 'adAccountId',
   'ghl location': 'ghlLocationId', 'ghl id': 'ghlLocationId', 'ghl location id': 'ghlLocationId',
   'ghl api': 'ghlApiKey', 'ghl key': 'ghlApiKey', 'ghl api key': 'ghlApiKey',
   'lead sheet': 'leadSheetUrl', 'lead sheet url': 'leadSheetUrl',
   // cycle
-  'cycle': 'cycle', 'cycle #': 'cycle', 'cycle number': 'cycle',
-  'cycle start': 'cycleStart', 'start': 'cycleStart', 'start date': 'cycleStart',
-  'cycle end': 'cycleEnd', 'end': 'cycleEnd', 'end date': 'cycleEnd',
+  'cycle': 'cycle', 'cycle number': 'cycle', 'cycle no': 'cycle',
+  'cycle start': 'cycleStart', 'start': 'cycleStart', 'start date': 'cycleStart', 'cycle start date': 'cycleStart',
+  'cycle end': 'cycleEnd', 'end': 'cycleEnd', 'end date': 'cycleEnd', 'cycle end date': 'cycleEnd',
   'days remaining': 'daysRemaining', 'remaining': 'daysRemaining',
   'ahead by': 'aheadBy',
   'on track': 'onTrack',
@@ -2330,35 +2332,57 @@ const ACCOUNTS_HEADER_MAP = {
   'hp': 'hp',
   'ftg': 'ftg',
   'cycle pace': 'cyclePace',
-  '5-day pace': 'fiveDayPace', '5 day pace': 'fiveDayPace', 'five day pace': 'fiveDayPace',
-  "greg's goal": 'gregGoal', 'gregs goal': 'gregGoal',
+  '5 day pace': 'fiveDayPace', 'five day pace': 'fiveDayPace',
+  'gregs goal': 'gregGoal', 'greg goal': 'gregGoal',
   'booked goal': 'bookedGoal', 'goal': 'bookedGoal',
-  'leads': 'leads',
-  'osa': 'osa', 'osa%': 'osa', 'osa %': 'osa',
-  'booked': 'booked',
+  'booked appointment goal': 'bookedGoal', 'booked appointments goal': 'bookedGoal',
+  'leads': 'leads', 'total leads': 'leads',
+  'osa': 'osa',
+  'booked': 'booked', 'booked appointments': 'booked',
+  'of booked appointments': 'booked', 'number of booked appointments': 'booked',
   'est booked': 'estBooked', 'estimated booked': 'estBooked', 'projected': 'estBooked',
-  'l2b': 'l2bRate', 'l2b%': 'l2bRate', 'l2b rate': 'l2bRate', 'l2b %': 'l2bRate',
+  'est booked appointments': 'estBooked', 'estimated booked appointments': 'estBooked',
+  'l2b': 'l2bRate', 'l2b rate': 'l2bRate',
   // money
   'cpl': 'cpl',
   'cpl goal': 'cplGoal',
   'cpqb': 'cpqb', 'cpa': 'cpqb',
   'daily budget': 'dailyBudget',
   'monthly budget': 'monthlyBudget', 'budget': 'monthlyBudget',
-  'spend': 'spent', 'spent': 'spent', 'spend mtd': 'spent',
-  '5-day spend': 'fiveDay', '5 day spend': 'fiveDay', 'five day spend': 'fiveDay',
+  'spend': 'spent', 'spent': 'spent', 'spend mtd': 'spent', 'amount spent': 'spent',
+  '5 day spend': 'fiveDay', 'five day spend': 'fiveDay',
   // meta KPIs
-  'ctr': 'ctr', 'ctr%': 'ctr',
-  'cpc': 'cpc',
-  'cpm': 'cpm',
+  'ctr': 'ctr', 'link ctr': 'ctr',
+  'cpc': 'cpc', 'link cpc': 'cpc',
+  'cpm': 'cpm', 'link cpm': 'cpm',
   'frequency': 'frequency', 'freq': 'frequency',
-  'survey': 'survey', 'survey%': 'survey', 'survey %': 'survey',
+  'survey': 'survey',
 };
+
+// Normalize a header for fuzzy matching: strip parens, $%#, lowercase, collapse separators
+function normalizeHeader(h) {
+  return String(h || '')
+    .replace(/\([^)]*\)/g, '')      // remove parens and their contents
+    .replace(/[\$%#]/g, '')          // strip currency / percent / hash
+    .toLowerCase()
+    .replace(/[\.\,\-\/_]/g, ' ')    // separators → space
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Extract a number from a "Cycle 5" / "Cycle 5 - Extended" / "5" string.
+// Returns null if no number found (so we can skip non-cycle rows).
+function parseCycleNumber(s) {
+  if (s == null || s === '') return null;
+  const m = String(s).match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
 
 // Parse a value that might be a percent ("0.78%") or a dollar ("$1,234.56") into a number
 function coerceNumber(v) {
   if (v === null || v === undefined) return v;
   const s = String(v).trim();
-  if (s === '' || s === '—' || s.toLowerCase() === 'n/a') return null;
+  if (s === '' || s === '—' || s.toLowerCase() === 'n/a' || /^#(div|value|ref|name|num|null|n\/a)/i.test(s)) return null;
   const cleaned = s.replace(/[$,%\s]/g, '');
   const n = parseFloat(cleaned);
   return isNaN(n) ? s : n;
@@ -2366,7 +2390,7 @@ function coerceNumber(v) {
 
 // Tracks the column letter for each field — populated during read, used for write
 let ACCOUNTS_COL_BY_FIELD = {};
-// Tracks each row's index in the sheet, by account name — used for write
+// Tracks each row's sheet position by account name — used for write to current cycle
 let ACCOUNTS_ROW_BY_NAME = {};
 
 const NUMERIC_FIELDS = new Set([
@@ -2374,6 +2398,12 @@ const NUMERIC_FIELDS = new Set([
   'leads','osa','booked','estBooked','l2bRate','cplGoal','cpl','cpqb','dailyBudget','monthlyBudget',
   'spent','fiveDay','ctr','cpc','cpm','frequency','survey'
 ]);
+
+function colIdxToLetter(i) {
+  let n = i, letter = '';
+  do { letter = String.fromCharCode(65 + (n % 26)) + letter; n = Math.floor(n/26) - 1; } while (n >= 0);
+  return letter;
+}
 
 async function pullFromAccountsSheet() {
   if (!ACCOUNTS_SHEET_ID) return;
@@ -2386,56 +2416,89 @@ async function pullFromAccountsSheet() {
     const rows = parseCSV(csv);
     if (rows.length < 2) throw new Error('no rows');
 
-    // Map column index → dashboard field via the alias dictionary
+    // Map column index → dashboard field via normalized header matching
     const headers = rows[0];
     const colIdxToField = {};
     const fieldToColLetter = {};
+    const unmappedHeaders = [];
     headers.forEach((h, i) => {
-      const key = String(h || '').trim().toLowerCase();
-      const field = ACCOUNTS_HEADER_MAP[key];
+      const norm = normalizeHeader(h);
+      if (!norm) return;
+      const field = ACCOUNTS_HEADER_MAP[norm];
       if (field) {
         colIdxToField[i] = field;
-        // Convert col index to letter (A, B, ..., Z, AA, AB, ...)
-        let n = i, letter = '';
-        do { letter = String.fromCharCode(65 + (n % 26)) + letter; n = Math.floor(n/26) - 1; } while (n >= 0);
-        fieldToColLetter[field] = letter;
+        fieldToColLetter[field] = colIdxToLetter(i);
+      } else {
+        unmappedHeaders.push(h);
       }
     });
     ACCOUNTS_COL_BY_FIELD = fieldToColLetter;
 
-    // Build accounts list, skipping empty rows
-    const dataRows = rows.slice(1).filter(r => r.some(c => c && c.trim()));
-    const newAccounts = [];
-    const newRowMap = {};
-    dataRows.forEach((row, rowIdx) => {
+    // Walk every data row, build cycle-rows. Skip:
+    //  - rows without a parseable Cycle number (KPI threshold, manager labels, account header rows)
+    //  - rows without an account name
+    const dataRows = rows.slice(1);
+    const cycleRows = [];
+    dataRows.forEach((row, dataRowIdx) => {
       const obj = {};
       Object.entries(colIdxToField).forEach(([i, field]) => {
         let v = row[i] !== undefined ? row[i].trim() : '';
         if (NUMERIC_FIELDS.has(field) && v !== '') v = coerceNumber(v);
         obj[field] = v;
       });
-      if (!obj.name) return;
-      newAccounts.push(obj);
-      newRowMap[obj.name] = rowIdx; // 0-based row index in data (sheet row = +2)
+      const cycleNum = parseCycleNumber(obj.cycle);
+      if (cycleNum == null) return;       // not a cycle row → skip
+      if (!obj.name)         return;       // no account name → skip
+      obj.cycle  = cycleNum;
+      obj.status = 'Active';               // mark current cycles as Active so the LIVE filter includes them
+      cycleRows.push({ sheetRowIdx: dataRowIdx, fields: obj });
     });
+
+    // Group cycle rows by account name. For each account: highest cycle = current,
+    // remaining cycles (newest → oldest) = previous-cycle history.
+    const byAccount = {};
+    cycleRows.forEach(cr => {
+      const k = cr.fields.name;
+      if (!byAccount[k]) byAccount[k] = [];
+      byAccount[k].push(cr);
+    });
+
+    const newAccounts = [];
+    const newHistory  = {};
+    const newRowMap   = {};
+    Object.entries(byAccount).forEach(([name, list]) => {
+      list.sort((a,b) => b.fields.cycle - a.fields.cycle);
+      const current = list[0];
+      newAccounts.push(current.fields);
+      newRowMap[name] = current.sheetRowIdx;
+      const priors = list.slice(1).map(p => p.fields);
+      if (priors.length) newHistory[name] = priors;
+    });
+
     ACCOUNTS_ROW_BY_NAME = newRowMap;
 
-    // Replace the in-memory accounts array
+    // Replace in-memory data
     accounts.length = 0;
     newAccounts.forEach(a => accounts.push(a));
 
-    // Re-render anything that depends on accounts
-    if (typeof renderAccountTable === 'function') renderAccountTable();
-    if (typeof renderCommandCenter === 'function') renderCommandCenter();
-    if (typeof renderAccounts === 'function') renderAccounts();
+    // Replace previous-cycle history (keep the const reference, swap contents)
+    Object.keys(accountHistory).forEach(k => delete accountHistory[k]);
+    Object.assign(accountHistory, newHistory);
 
-    console.log(`✓ accounts sheet · loaded ${accounts.length} rows · mapped fields: ${Object.keys(fieldToColLetter).join(', ')}`);
+    // Re-render anything driven by accounts
+    if (typeof renderAccountTable === 'function')   renderAccountTable();
+    if (typeof renderCommandCenter === 'function')  renderCommandCenter();
+    if (typeof renderAccounts === 'function')       renderAccounts();
+
+    console.log(`✓ accounts sheet · ${accounts.length} live accounts · ${Object.keys(newHistory).length} have prior cycles`);
+    console.log(`  mapped fields: ${Object.keys(fieldToColLetter).join(', ')}`);
+    if (unmappedHeaders.length) console.log(`  unmapped headers (add aliases if needed): ${unmappedHeaders.filter(Boolean).join(' | ')}`);
   } catch (e) {
     console.warn('Accounts sheet pull failed, keeping demo data:', e.message);
   }
 }
 
-// Push edits to the accounts sheet by account name + field
+// Push edits to the accounts sheet by account name + field (writes to current cycle row)
 async function pushAccountField(accountName, field, value) {
   const rowIdx = ACCOUNTS_ROW_BY_NAME[accountName];
   const col = ACCOUNTS_COL_BY_FIELD[field];
