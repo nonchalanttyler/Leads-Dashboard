@@ -384,7 +384,7 @@
         <div class="w-2 h-2 rounded-full bg-green-500 pulse"></div>
         <span>Meta API · Synced 2m ago</span>
       </div>
-      <button onclick="pullFromLogbookSheet(); pullFromAccountsSheet();" class="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-dark-700/50 hover:bg-dark-600/50 text-dark-300 hover:text-white text-xs transition-all">
+      <button onclick="refreshAllSheetData()" class="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-dark-700/50 hover:bg-dark-600/50 text-dark-300 hover:text-white text-xs transition-all">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         Refresh Data
       </button>
@@ -421,7 +421,7 @@
         <p class="text-sm text-dark-400"><span id="cc-active" class="text-white font-semibold">—</span> active accounts · <span id="cc-inactive">—</span> inactive · <span id="cc-leads">—</span> leads tracked</p>
         <div class="text-right md:text-right">
           <div class="flex items-center gap-2 md:justify-end text-xs text-green-400"><span class="w-2 h-2 rounded-full bg-green-400 pulse"></span> Live Data</div>
-          <div class="text-[11px] text-dark-500 mt-0.5">May 9, 9:37 AM</div>
+          <div id="live-sync-stamp" class="text-[11px] text-dark-500 mt-0.5">syncing…</div>
         </div>
       </div>
 
@@ -2316,8 +2316,7 @@ async function pullFromLogbookSheet() {
   }
 }
 
-// Pull on page load
-pullFromLogbookSheet();
+// (logbook + accounts both pulled by refreshAllSheetData below)
 
 /* ============================================================
    ACCOUNTS SHEET — per-client cycle data
@@ -2524,7 +2523,60 @@ async function pushAccountField(accountName, field, value) {
   return pushToAccountsSheet(rowIdx, col, value);
 }
 
-pullFromAccountsSheet();
+/* ============================================================
+   LIVE AUTO-REFRESH
+   ------------------------------------------------------------
+   Poll both sheets every 60s while the tab is visible, AND
+   immediately when the user switches back to this tab. Edits
+   to either sheet show up here within ~1 minute, instantly if
+   you tab away and back. The Refresh Data button still works
+   for instant-now refresh.
+   ============================================================ */
+
+let lastSyncAt = null;
+let autoRefreshTimer = null;
+
+async function refreshAllSheetData() {
+  await Promise.all([
+    pullFromLogbookSheet().catch(e => console.warn('logbook pull:', e)),
+    pullFromAccountsSheet().catch(e => console.warn('accounts pull:', e)),
+  ]);
+  lastSyncAt = Date.now();
+  updateLiveSyncStamp();
+}
+
+function updateLiveSyncStamp() {
+  const el = document.getElementById('live-sync-stamp');
+  if (!el) return;
+  if (!lastSyncAt) { el.textContent = 'syncing…'; return; }
+  const secs = Math.floor((Date.now() - lastSyncAt) / 1000);
+  if (secs < 5)         el.textContent = 'just now';
+  else if (secs < 60)   el.textContent = `${secs}s ago`;
+  else if (secs < 3600) el.textContent = `${Math.floor(secs/60)}m ago`;
+  else                  el.textContent = `${Math.floor(secs/3600)}h ago`;
+}
+
+// Tick the relative-time display every 5 seconds so it stays fresh
+setInterval(updateLiveSyncStamp, 5000);
+
+// Auto-poll every 60 seconds, but only when the tab is visible
+function startAutoRefresh() {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(() => {
+    if (document.visibilityState === 'visible') refreshAllSheetData();
+  }, 60 * 1000);
+}
+
+// Instant refresh when the user returns to the tab after being away >10s
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && lastSyncAt && (Date.now() - lastSyncAt) > 10000) {
+    refreshAllSheetData();
+  }
+});
+
+// Initial pull + start the recurring poll
+refreshAllSheetData();
+startAutoRefresh();
 
 /* ============================================================
    CLIENT DETAIL VIEW
