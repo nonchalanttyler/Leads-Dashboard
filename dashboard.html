@@ -381,7 +381,7 @@
         <div class="w-2 h-2 rounded-full bg-green-500 pulse"></div>
         <span>Meta API · Synced 2m ago</span>
       </div>
-      <button onclick="pullFromLogbookSheet()" class="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-dark-700/50 hover:bg-dark-600/50 text-dark-300 hover:text-white text-xs transition-all">
+      <button onclick="pullFromLogbookSheet(); pullFromAccountsSheet();" class="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-dark-700/50 hover:bg-dark-600/50 text-dark-300 hover:text-white text-xs transition-all">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         Refresh Data
       </button>
@@ -2185,9 +2185,13 @@ function flashSaved(el) {
 const LOGBOOK_SHEET_ID    = '14Uxkf5Ppy9VEkX3PVk76U9C-WSqMfHE-HaR-02ACBxo';
 const LOGBOOK_TAB_NAME    = 'TEST LOGBOOK';
 
+// Accounts (per-client cycle data) sheet
+const ACCOUNTS_SHEET_ID   = '1q0giHbBpxb-g9jnpvbK_E26Qt4KuwjjZSbiZXOgsmr4';
+const ACCOUNTS_TAB_NAME   = 'All Accounts';
+
 const LOGBOOK_WRITE_URL   = 'https://script.google.com/macros/s/AKfycbyyutRjog-sGP-M1O-K_EBYReRFAyPII2S5v6lhzErKwupKHTo-XauAT1hkB4csz-7Dlw/exec';
 
-// Field name → spreadsheet column letter (must match your sheet)
+// Logbook columns: field name → spreadsheet column letter
 const SHEET_COL_MAP = {
   va:'A', date:'B', sub:'C', name:'D', addr:'E', dist:'F',
   status:'G', sched:'H', whoConf:'I', dateConf:'J',
@@ -2207,24 +2211,40 @@ function setLbSyncSubtitle(text) {
   if (el) el.textContent = text;
 }
 
-async function pushToLogbookSheet(rowIdx, field, value) {
+// Generic sheet writer — used by both logbook and accounts paths.
+// The Apps Script (now generic) accepts { sheetId, tabName, cell, value }.
+async function writeToSheet({ sheetId, tabName, cell, value }) {
   if (!LOGBOOK_WRITE_URL) {
-    console.log(`[stub · no Apps Script URL] would write · row=${rowIdx + 2} field=${field} (${SHEET_COL_MAP[field]}) value="${value}"`);
-    return;
+    console.log(`[stub · no Apps Script URL] would write · sheet=${sheetId} tab=${tabName} cell=${cell} value="${value}"`);
+    return { ok:false, error:'no url' };
   }
   try {
-    // Apps Script web apps accept text/plain to skip CORS preflight
     const r = await fetch(LOGBOOK_WRITE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ rowIdx, field, value }),
+      body: JSON.stringify({ sheetId, tabName, cell, value }),
     });
     const result = await r.json();
     if (!result.ok) console.error('Sheet write returned error:', result.error);
-    else console.log(`✓ wrote ${result.cell} = "${value}"`);
+    else console.log(`✓ wrote ${tabName}!${cell} = "${value}"`);
+    return result;
   } catch (e) {
     console.error('Sheet write failed:', e);
+    return { ok:false, error:e.toString() };
   }
+}
+
+async function pushToLogbookSheet(rowIdx, field, value) {
+  const col = SHEET_COL_MAP[field];
+  if (!col) { console.warn('Unknown logbook field:', field); return; }
+  const cell = col + (rowIdx + 2); // +2 = header row offset
+  return writeToSheet({ sheetId: LOGBOOK_SHEET_ID, tabName: LOGBOOK_TAB_NAME, cell, value });
+}
+
+// Use after we know the column letter of the field in the accounts sheet (set during read)
+async function pushToAccountsSheet(rowIdx, col, value) {
+  const cell = col + (rowIdx + 2);
+  return writeToSheet({ sheetId: ACCOUNTS_SHEET_ID, tabName: ACCOUNTS_TAB_NAME, cell, value });
 }
 
 // Lightweight CSV parser — handles quoted fields, embedded commas, escaped quotes
@@ -2281,6 +2301,150 @@ async function pullFromLogbookSheet() {
 
 // Pull on page load
 pullFromLogbookSheet();
+
+/* ============================================================
+   ACCOUNTS SHEET — per-client cycle data
+   Reads the accounts sheet via CSV export. The column order
+   doesn't matter — we map headers → fields by alias matching.
+   Add aliases below if your sheet uses a header we don't catch.
+   ============================================================ */
+
+// Header text (lowercased, trimmed) → dashboard field
+const ACCOUNTS_HEADER_MAP = {
+  // identity
+  'account': 'name', 'account name': 'name', 'client': 'name', 'name': 'name',
+  'status': 'status',
+  'manager': 'manager', 'pod': 'manager',
+  'ad account': 'adAccountId', 'ad account id': 'adAccountId',
+  'ghl location': 'ghlLocationId', 'ghl id': 'ghlLocationId', 'ghl location id': 'ghlLocationId',
+  'ghl api': 'ghlApiKey', 'ghl key': 'ghlApiKey', 'ghl api key': 'ghlApiKey',
+  'lead sheet': 'leadSheetUrl', 'lead sheet url': 'leadSheetUrl',
+  // cycle
+  'cycle': 'cycle', 'cycle #': 'cycle', 'cycle number': 'cycle',
+  'cycle start': 'cycleStart', 'start': 'cycleStart', 'start date': 'cycleStart',
+  'cycle end': 'cycleEnd', 'end': 'cycleEnd', 'end date': 'cycleEnd',
+  'days remaining': 'daysRemaining', 'remaining': 'daysRemaining',
+  'ahead by': 'aheadBy',
+  'on track': 'onTrack',
+  // performance
+  'hp': 'hp',
+  'ftg': 'ftg',
+  'cycle pace': 'cyclePace',
+  '5-day pace': 'fiveDayPace', '5 day pace': 'fiveDayPace', 'five day pace': 'fiveDayPace',
+  "greg's goal": 'gregGoal', 'gregs goal': 'gregGoal',
+  'booked goal': 'bookedGoal', 'goal': 'bookedGoal',
+  'leads': 'leads',
+  'osa': 'osa', 'osa%': 'osa', 'osa %': 'osa',
+  'booked': 'booked',
+  'est booked': 'estBooked', 'estimated booked': 'estBooked', 'projected': 'estBooked',
+  'l2b': 'l2bRate', 'l2b%': 'l2bRate', 'l2b rate': 'l2bRate', 'l2b %': 'l2bRate',
+  // money
+  'cpl': 'cpl',
+  'cpl goal': 'cplGoal',
+  'cpqb': 'cpqb', 'cpa': 'cpqb',
+  'daily budget': 'dailyBudget',
+  'monthly budget': 'monthlyBudget', 'budget': 'monthlyBudget',
+  'spend': 'spent', 'spent': 'spent', 'spend mtd': 'spent',
+  '5-day spend': 'fiveDay', '5 day spend': 'fiveDay', 'five day spend': 'fiveDay',
+  // meta KPIs
+  'ctr': 'ctr', 'ctr%': 'ctr',
+  'cpc': 'cpc',
+  'cpm': 'cpm',
+  'frequency': 'frequency', 'freq': 'frequency',
+  'survey': 'survey', 'survey%': 'survey', 'survey %': 'survey',
+};
+
+// Parse a value that might be a percent ("0.78%") or a dollar ("$1,234.56") into a number
+function coerceNumber(v) {
+  if (v === null || v === undefined) return v;
+  const s = String(v).trim();
+  if (s === '' || s === '—' || s.toLowerCase() === 'n/a') return null;
+  const cleaned = s.replace(/[$,%\s]/g, '');
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? s : n;
+}
+
+// Tracks the column letter for each field — populated during read, used for write
+let ACCOUNTS_COL_BY_FIELD = {};
+// Tracks each row's index in the sheet, by account name — used for write
+let ACCOUNTS_ROW_BY_NAME = {};
+
+const NUMERIC_FIELDS = new Set([
+  'cycle','daysRemaining','aheadBy','hp','ftg','cyclePace','fiveDayPace','gregGoal','bookedGoal',
+  'leads','osa','booked','estBooked','l2bRate','cplGoal','cpl','cpqb','dailyBudget','monthlyBudget',
+  'spent','fiveDay','ctr','cpc','cpm','frequency','survey'
+]);
+
+async function pullFromAccountsSheet() {
+  if (!ACCOUNTS_SHEET_ID) return;
+  const url = `https://docs.google.com/spreadsheets/d/${ACCOUNTS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(ACCOUNTS_TAB_NAME)}`;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const csv = await r.text();
+    if (/<html/i.test(csv.slice(0, 200))) throw new Error('sheet not public');
+    const rows = parseCSV(csv);
+    if (rows.length < 2) throw new Error('no rows');
+
+    // Map column index → dashboard field via the alias dictionary
+    const headers = rows[0];
+    const colIdxToField = {};
+    const fieldToColLetter = {};
+    headers.forEach((h, i) => {
+      const key = String(h || '').trim().toLowerCase();
+      const field = ACCOUNTS_HEADER_MAP[key];
+      if (field) {
+        colIdxToField[i] = field;
+        // Convert col index to letter (A, B, ..., Z, AA, AB, ...)
+        let n = i, letter = '';
+        do { letter = String.fromCharCode(65 + (n % 26)) + letter; n = Math.floor(n/26) - 1; } while (n >= 0);
+        fieldToColLetter[field] = letter;
+      }
+    });
+    ACCOUNTS_COL_BY_FIELD = fieldToColLetter;
+
+    // Build accounts list, skipping empty rows
+    const dataRows = rows.slice(1).filter(r => r.some(c => c && c.trim()));
+    const newAccounts = [];
+    const newRowMap = {};
+    dataRows.forEach((row, rowIdx) => {
+      const obj = {};
+      Object.entries(colIdxToField).forEach(([i, field]) => {
+        let v = row[i] !== undefined ? row[i].trim() : '';
+        if (NUMERIC_FIELDS.has(field) && v !== '') v = coerceNumber(v);
+        obj[field] = v;
+      });
+      if (!obj.name) return;
+      newAccounts.push(obj);
+      newRowMap[obj.name] = rowIdx; // 0-based row index in data (sheet row = +2)
+    });
+    ACCOUNTS_ROW_BY_NAME = newRowMap;
+
+    // Replace the in-memory accounts array
+    accounts.length = 0;
+    newAccounts.forEach(a => accounts.push(a));
+
+    // Re-render anything that depends on accounts
+    if (typeof renderAccountTable === 'function') renderAccountTable();
+    if (typeof renderCommandCenter === 'function') renderCommandCenter();
+    if (typeof renderAccounts === 'function') renderAccounts();
+
+    console.log(`✓ accounts sheet · loaded ${accounts.length} rows · mapped fields: ${Object.keys(fieldToColLetter).join(', ')}`);
+  } catch (e) {
+    console.warn('Accounts sheet pull failed, keeping demo data:', e.message);
+  }
+}
+
+// Push edits to the accounts sheet by account name + field
+async function pushAccountField(accountName, field, value) {
+  const rowIdx = ACCOUNTS_ROW_BY_NAME[accountName];
+  const col = ACCOUNTS_COL_BY_FIELD[field];
+  if (rowIdx === undefined) { console.warn('Unknown account:', accountName); return; }
+  if (!col) { console.warn('Field not present in accounts sheet:', field); return; }
+  return pushToAccountsSheet(rowIdx, col, value);
+}
+
+pullFromAccountsSheet();
 
 /* ============================================================
    CLIENT DETAIL VIEW
